@@ -1,0 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --accent: #7dd3fc;
+  --bezel: #1f2937;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #111827;
+  color: var(--text);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+
+/* =========================
+   Night Background
+   ========================= */
+
+
+.ambient-background {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(to bottom, #111827, #182235 90%, #1f2937);
+}
+
+.ambient-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.8) 1px, transparent 2px),
+    radial-gradient(circle at 70% 30%, rgba(255,255,255,0.6) 1px, transparent 2px),
+    radial-gradient(circle at 85% 15%, rgba(255,255,255,0.7) 1px, transparent 2px),
+    radial-gradient(circle at 35% 40%, rgba(255,255,255,0.5) 1px, transparent 2px),
+    radial-gradient(circle at 55% 25%, rgba(255,255,255,0.6) 1px, transparent 2px);
+}
+
+/* Rain */
+.rain-drop {
+  position: absolute;
+  top: -120px;
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(transparent, rgba(190,220,255,0.55));
+  animation: rainFall linear infinite;
+}
+
+@keyframes rainFall {
+  from {
+    transform: translateY(-100px) translateX(0) rotate(-7deg);
+  }
+  to {
+    transform: translateY(100vh) translateX(80px) rotate(-7deg);
+  }
+}
+
+
+/* =========================
+   Layout
+   ========================= */
+
+
+.container {
+  width: min(calc(100% - 48px), 1100px);
+  margin-inline: auto;
+}
+
+.hero {
+  padding-top: 80px;
+  text-align: center;
+}
+
+.hero h1 {
+  margin: 0 0 18px;
+  font-size: clamp(34px,5vw,52px);
+  line-height: 1.2;
+}
+
+.hero p {
+  max-width: 46ch;
+  margin: auto;
+  color: var(--muted);
+}
+
+.editor-section {
+  padding: 50px 0 120px;
+}
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+
+/* =========================
+   Text Screens
+   ========================= */
+
+
+.text-panel {
+  background: var(--bezel);
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.35);
+}
+
+.monitor-screen {
+  background: #172033;
+  border-radius: 8px;
+  padding: 18px;
+  min-height: 420px;
+  box-shadow: 0 0 30px rgba(255,245,210,0.08);
+}
+
+.monitor-screen h2 {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 28px;
+  margin-bottom: 15px;
+}
+
+.panel-header h2 {
+  margin: 0;
+}
+
+/* Editor */
+.editor-wrapper {
+  position: relative;
+  width: 100%;
+  height: 40vh;
+  min-height: 320px;
+}
+
+#highlightLayer,
+#inputText {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: normal;
+  letter-spacing: normal;
+
+  white-space: pre-wrap;
+  word-wrap: break-word;
+
+  box-sizing: border-box;
+}
+
+#highlightLayer {
+  pointer-events: none;
+  overflow: hidden;
+  color: white;
+}
+
+#inputText {
+  background: transparent;
+  color: transparent;
+  caret-color: white;
+  resize: none;
+}
+
+#inputText::placeholder,
+#outputText::placeholder {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  color: #7f8495;
+  opacity: 1;
+}
+
+textarea {
+  width: 100%;
+  height: 40vh;
+  min-height: 320px;
+  border: none;
+  resize: none;
+  outline: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+#outputText {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+
+/* =========================
+   Copy Button
+   ========================= */
+
+
+.copy-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+#copyButton {
+  background: rgba(125, 211, 252, 0.18);
+  color: #7dd3fc;
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  border-radius: 14px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
+  transition: all 0.2s ease;
+}
+
+#copyButton:hover {
+  background: rgba(125, 211, 252, 0.28);
+  transform: translateY(-1px);
+}
+
+#copyButton:active {
+  transform: translateY(1px);
+}
+
+
+/* =========================
+   Spelling Detection
+   ========================= */
+
+
+.misspelled {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: #ff6b8a;
+  text-decoration-thickness: 1.5px;
+}
+
+/* =========================
+    Extras
+   ========================= */
+
+footer {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+
+/* Responsive */
+@media(max-width:760px) {
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+}

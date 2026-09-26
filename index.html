@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>WritePretty</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- =========================
+       Ambient Background
+       ========================= -->
+
+  <div class="ambient-background"></div>
+
+
+  <!-- =========================
+       Hero
+       ========================= -->
+
+  <section class="hero">
+    <div class="container">
+      <h1>
+        Clean your text. Keep your words.
+        <br>
+        Make it pretty.
+      </h1>
+
+      <p>
+        A simple rule-based text cleanup tool that improves consistency and readability.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- =========================
+       Editor
+       ========================= -->
+
+  <section class="editor-section">
+    <div class="container editor-layout">
+
+      <!-- Original text input and spelling highlight layer. -->
+      <div class="text-panel">
+        <div class="monitor-screen">
+          <div class="panel-header">
+            <h2>Original Text</h2>
+          </div>
+
+          <div class="editor-wrapper">
+            <div id="highlightLayer"></div>
+
+            <textarea
+              id="inputText"
+              placeholder="Paste your text here..."
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Displays the cleaned text and provides the copy action. -->
+      <div class="text-panel">
+        <div class="monitor-screen">
+          <div class="panel-header">
+            <h2>Processed Text</h2>
+
+            <button id="copyButton">
+              Copy
+            </button>
+          </div>
+
+          <textarea
+            id="outputText"
+            placeholder="Your cleaned text will appear here..."
+            readonly
+          ></textarea>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- =========================
+       Footer
+       ========================= -->
+
+  <footer>
+    <p>
+      Local processing · No AI rewriting · Your words stay yours
+    </p>
+  </footer>
+
+
+  <!-- =========================
+       Scripts
+       ========================= -->
+
+  <!-- Typo.js provides the spell-checking functions used by script.js. -->
+  <script src="libraries/typo.js"></script>
+  <script src="script.js"></script>
+
+</body>
+
+</html>

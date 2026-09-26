@@ -133,13 +133,25 @@ copyButton.addEventListener("click", () => {
 /* Creates rain drops with random positions, speeds, and starting delays. */
 const background = document.querySelector(".ambient-background");
 
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 70; i++) {
   const drop = document.createElement("span");
-
   drop.classList.add("rain-drop");
   drop.style.left = Math.random() * 100 + "%";
-  drop.style.animationDuration = (1.5 + Math.random() * 2) + "s";
-  drop.style.animationDelay = Math.random() * 3 + "s";
+
+  // Shorter / longer droplets
+  drop.style.height = (12 + Math.random() * 20) + "px";
+
+  // Slight variation in thickness
+  drop.style.width = (1 + Math.random() * 1.2) + "px";
+
+  // Different visibility
+  drop.style.opacity = 0.3 + Math.random() * 0.5;
+
+  drop.style.animationDuration =
+    (1.4 + Math.random() * 1.8) + "s";
+
+  drop.style.animationDelay =
+    -(Math.random() * 3) + "s";
 
   background.appendChild(drop);
 }

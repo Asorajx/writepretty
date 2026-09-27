@@ -279,6 +279,13 @@ textarea {
   text-decoration-thickness: 1.5px;
 }
 
+.formatting-issue {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: #7dd3fc;
+  text-decoration-thickness: 1.5px;
+}
+
 /* =========================
     Extras
    ========================= */

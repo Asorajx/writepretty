@@ -49,7 +49,7 @@ function detectSpellingErrors(text) {
   }
 
   const errors = [];
-  const words = text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) || [];
+  const words = removeProtectedText(text).match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) || [];
 
   words.forEach(word => {
     if (
@@ -69,11 +69,53 @@ function detectCapitalisationIssues(text) {
     return [];
   }
 
-  const words = text.match(/\b[a-z][A-Za-z']*\b/g) || [];
+  const words = removeProtectedText(text).match(/\b[a-z][A-Za-z']*\b/g) || [];
 
   return words.filter(word =>
     isPossibleCapitalisationIssue(word)
   );
+}
+
+/* Finds ambiguous cases that may be missing a space after a full stop. */
+function detectFormattingIssues(text) {
+  const issues = [];
+  const matches = text.matchAll(/\.([A-Za-z]+)/g);
+
+  for (const match of matches) {
+    const word = match[1];
+    const wordStart = match.index + 1;
+
+    const beforePeriod = text.slice(0, match.index);
+    const previousWord = beforePeriod.match(/([A-Za-z]+)$/);
+
+    /* Ignore obvious URLs and email addresses. */
+    const nearbyText = text.slice(
+      Math.max(0, match.index - 50),
+      match.index
+    );
+
+    if (
+      /https?:\/\/\S*$/i.test(nearbyText) ||
+      /www\.\S*$/i.test(nearbyText) ||
+      /@\S*$/i.test(nearbyText)
+    ) {
+      continue;
+    }
+
+    issues.push({
+      word,
+      index: wordStart
+    });
+  }
+
+  return issues;
+}
+
+/* Removes URLs and email addresses from text before language checks. */
+function removeProtectedText(text) {
+  return text
+    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, " ")
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, " ");
 }
 
 /* Escapes user text before displaying it inside the highlight layer. */
@@ -84,7 +126,7 @@ function escapeHtml(text) {
     .replace(/>/g, "&gt;");
 }
 
-/* Displays spelling and possible capitalisation issues behind the input. */
+/* Displays spelling, capitalisation, and formatting issues behind the input. */
 function updateHighlights(text) {
   const spellingErrors = new Set(
     detectSpellingErrors(text).map(word => word.toLowerCase())
@@ -94,21 +136,45 @@ function updateHighlights(text) {
     detectCapitalisationIssues(text).map(word => word.toLowerCase())
   );
 
-  const parts = text.split(/(\b[A-Za-z]+(?:'[A-Za-z]+)?\b)/g);
+  const formattingIssues = detectFormattingIssues(text);
 
-  const highlightedText = parts.map(part => {
-    const lowerCasePart = part.toLowerCase();
+  const formattingIndexes = new Set(
+    formattingIssues.map(issue => issue.index)
+  );
 
-    if (capitalisationIssues.has(lowerCasePart)) {
-      return `<span class="capitalisation-issue">${escapeHtml(part)}</span>`;
+  const wordPattern = /[A-Za-z]+(?:'[A-Za-z]+)?/g;
+
+  let highlightedText = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = wordPattern.exec(text)) !== null) {
+    highlightedText += escapeHtml(
+      text.slice(lastIndex, match.index)
+    );
+
+    const word = match[0];
+    const lowerCaseWord = word.toLowerCase();
+
+    if (formattingIndexes.has(match.index)) {
+      highlightedText +=
+        `<span class="formatting-issue">${escapeHtml(word)}</span>`;
+    } else if (capitalisationIssues.has(lowerCaseWord)) {
+      highlightedText +=
+        `<span class="capitalisation-issue">${escapeHtml(word)}</span>`;
+    } else if (spellingErrors.has(lowerCaseWord)) {
+      highlightedText +=
+        `<span class="misspelled">${escapeHtml(word)}</span>`;
+    } else {
+      highlightedText += escapeHtml(word);
     }
 
-    if (spellingErrors.has(lowerCasePart)) {
-      return `<span class="misspelled">${escapeHtml(part)}</span>`;
-    }
+    lastIndex = wordPattern.lastIndex;
+  }
 
-    return escapeHtml(part);
-  }).join("");
+  highlightedText += escapeHtml(
+    text.slice(lastIndex)
+  );
 
   highlightLayer.innerHTML =
     highlightedText.replace(/\n/g, "<br>");
@@ -149,6 +215,25 @@ function protectMarkdownContent(text) {
   /* Protect Markdown code created using indentation. */
   protectedText = protectedText.replace(
     /^(?: {4}|\t).+$/gm,
+    protect
+  );
+
+  /* Normalises the URL scheme, then protects the rest of the URL from cleanup. */
+  protectedText = protectedText.replace(
+    /\b(?:https?:\/\/|www\.)\S+/gi,
+    match => {
+      const normalisedUrl = match.replace(
+        /^https?:\/\//i,
+        scheme => scheme.toLowerCase()
+      );
+
+      return protect(normalisedUrl);
+    }
+  );
+
+  /* Protect email addresses from text cleanup. */
+  protectedText = protectedText.replace(
+    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
     protect
   );
 
@@ -215,9 +300,11 @@ function removeExtraWhitespace(text) {
     .join("\n");
 }
 
-/* Removes unnecessary spaces before common punctuation marks. */
+/* Fixes clear spacing issues around common punctuation marks. */
 function fixPunctuationSpacing(text) {
-  return text.replace(/\s+([,.!?])/g, "$1");
+  return text
+    .replace(/\s+([,.!?;:])/g, "$1")
+    .replace(/([.,;:!?])(?=[A-Za-z])/g, "$1 ");
 }
 
 /* Removes outer blank lines without changing Markdown indentation. */

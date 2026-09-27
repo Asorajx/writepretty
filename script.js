@@ -121,19 +121,98 @@ loadDictionary();
    Main Text Processor
    ========================= */
 
-/* Runs each cleanup step in order and returns the processed text. */
-function cleanText(text) {
-  text = removeExtraWhitespace(text);
-  text = fixPunctuationSpacing(text);
-  text = trimWhitespace(text);
-  text = correctCapitalisation(text);
+/* Protects Markdown code so cleanup rules do not change its contents. */
+function protectMarkdownContent(text) {
+  const protectedParts = [];
 
-  return text;
+  /* Stores protected content and leaves a temporary token in its place. */
+  function protect(match) {
+    const token =
+      `@@WRITEPRETTY_PROTECTED_${protectedParts.length}@@`;
+
+    protectedParts.push(match);
+    return token;
+  }
+
+  /* Protect fenced code blocks, including unfinished blocks at the end of the text. */
+  let protectedText = text.replace(
+    /```[\s\S]*?(?:```|(?![\s\S]))|~~~[\s\S]*?(?:~~~|(?![\s\S]))/g,
+    protect
+  );
+
+  /* Protect inline code. */
+  protectedText = protectedText.replace(
+    /`[^`\n]*`/g,
+    protect
+  );
+
+  /* Protect Markdown code created using indentation. */
+  protectedText = protectedText.replace(
+    /^(?: {4}|\t).+$/gm,
+    protect
+  );
+
+  return {
+    text: protectedText,
+    protectedParts
+  };
 }
 
-/* Replaces repeated whitespace with a single space. */
+/* Restores protected Markdown content after text cleanup is complete. */
+function restoreMarkdownContent(text, protectedParts) {
+  let restoredText = text;
+
+  protectedParts.forEach((content, index) => {
+    const token = `@@WRITEPRETTY_PROTECTED_${index}@@`;
+
+    restoredText = restoredText.replace(
+      token,
+      () => content
+    );
+  });
+
+  return restoredText;
+}
+
+/* Runs each cleanup step while protecting Markdown code from changes. */
+function cleanText(text) {
+  const markdown = protectMarkdownContent(text);
+  let cleanedText = markdown.text;
+
+  cleanedText = removeExtraWhitespace(cleanedText);
+  cleanedText = fixPunctuationSpacing(cleanedText);
+  cleanedText = trimWhitespace(cleanedText);
+  cleanedText = correctCapitalisation(cleanedText);
+
+  return restoreMarkdownContent(
+    cleanedText,
+    markdown.protectedParts
+  );
+}
+
+/* Cleans repeated spaces inside lines without changing Markdown indentation or line breaks. */
 function removeExtraWhitespace(text) {
-  return text.replace(/[ \t]+/g, " ");
+  return text
+    .split("\n")
+    .map(line => {
+      const leadingWhitespace = line.match(/^[ \t]*/)[0];
+
+      const trailingWhitespace = line.match(/[ \t]*$/)[0];
+
+      const content = line.slice(
+        leadingWhitespace.length,
+        line.length - trailingWhitespace.length
+      );
+
+      const cleanedContent = content.replace(/[ \t]+/g, " ");
+
+      return (
+        leadingWhitespace +
+        cleanedContent +
+        trailingWhitespace
+      );
+    })
+    .join("\n");
 }
 
 /* Removes unnecessary spaces before common punctuation marks. */
@@ -141,23 +220,37 @@ function fixPunctuationSpacing(text) {
   return text.replace(/\s+([,.!?])/g, "$1");
 }
 
-/* Removes whitespace from the beginning and end of the text. */
+/* Removes outer blank lines without changing Markdown indentation. */
 function trimWhitespace(text) {
-  return text.trim();
+  return text.replace(
+    /^(?:[ \t]*\n)+|(?:\n[ \t]*)+$/g,
+    ""
+  );
 }
 
 /* Corrects capitalisation only when the intended change is clear. */
 function correctCapitalisation(text) {
   let correctedText = text;
 
-  /* Capitalise the first letter of the text and letters after sentence-ending punctuation. */
+  /* Capitalise sentence and paragraph starts, including Markdown emphasis. */
   correctedText = correctedText.replace(
-    /(^\s*|[.!?]\s+)([a-z])/g,
-    (match, prefix, letter) => prefix + letter.toUpperCase()
+    /(^|[.!?]\s+|\n[ \t]*\n[ \t]*)([*_~]{0,3})([a-z])/g,
+    (match, prefix, markdown, letter) =>
+      prefix + markdown + letter.toUpperCase()
+  );
+
+  /* Capitalise the readable text at the start of common Markdown blocks. */
+  correctedText = correctedText.replace(
+    /^([ \t]*(?:#{1,6}[ \t]+|>[ \t]*|[-+*][ \t]+|\d+[.)][ \t]+)(?:\[[ xX]\][ \t]+)?[*_~]{0,3})([a-z])/gm,
+    (match, prefix, letter) =>
+      prefix + letter.toUpperCase()
   );
 
   /* The standalone pronoun "i" should always be uppercase. */
-  correctedText = correctedText.replace(/\bi\b/g, "I");
+  correctedText = correctedText.replace(
+    /\bi\b/g,
+    "I"
+  );
 
   return correctedText;
 }

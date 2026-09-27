@@ -227,6 +227,38 @@ textarea {
 
 
 /* =========================
+   Scrollbars
+   ========================= */
+
+#inputText,
+#outputText {
+  scrollbar-width: thin;
+  scrollbar-color: #64748b transparent;
+}
+
+#inputText::-webkit-scrollbar,
+#outputText::-webkit-scrollbar {
+  width: 8px;
+}
+
+#inputText::-webkit-scrollbar-track,
+#outputText::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#inputText::-webkit-scrollbar-thumb,
+#outputText::-webkit-scrollbar-thumb {
+  background: #64748b;
+  border-radius: 999px;
+}
+
+#inputText::-webkit-scrollbar-thumb:hover,
+#outputText::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================
    Copy Button
    ========================= */
 

@@ -347,11 +347,21 @@ function correctCapitalisation(text) {
    Event Listeners
    ========================= */
 
-/* Processes the text and refreshes spelling highlights as the user types. */
+/* Keeps the highlight layer aligned with the textarea while scrolling. */
+function syncHighlightScroll() {
+  highlightLayer.scrollTop = inputText.scrollTop;
+  highlightLayer.scrollLeft = inputText.scrollLeft;
+}
+
+/* Processes the text and refreshes highlights as the user types. */
 inputText.addEventListener("input", () => {
   outputText.value = cleanText(inputText.value);
   updateHighlights(inputText.value);
+  syncHighlightScroll();
 });
+
+/* Moves the highlight layer together with the original text. */
+inputText.addEventListener("scroll", syncHighlightScroll);
 
 /* Copies the processed text and briefly confirms that it was copied. */
 copyButton.addEventListener("click", () => {

@@ -85,7 +85,7 @@ function cleanText(text) {
 
 /* Replaces repeated whitespace with a single space. */
 function removeExtraWhitespace(text) {
-  return text.replace(/\s+/g, " ");
+  return text.replace(/[ \t]+/g, " ");
 }
 
 /* Removes unnecessary spaces before common punctuation marks. */

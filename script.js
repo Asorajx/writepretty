@@ -76,17 +76,15 @@ function detectCapitalisationIssues(text) {
   );
 }
 
-/* Finds ambiguous cases that may be missing a space after a full stop. */
+/* Finds punctuation that may be missing a space after it. */
 function detectFormattingIssues(text) {
   const issues = [];
-  const matches = text.matchAll(/\.([A-Za-z]+)/g);
+  const matches = text.matchAll(/([.,;:!?])([A-Za-z]+)/g);
 
   for (const match of matches) {
-    const word = match[1];
-    const wordStart = match.index + 1;
-
-    const beforePeriod = text.slice(0, match.index);
-    const previousWord = beforePeriod.match(/([A-Za-z]+)$/);
+    const punctuation = match[1];
+    const word = match[2];
+    const wordStart = match.index + punctuation.length;
 
     /* Ignore obvious URLs and email addresses. */
     const nearbyText = text.slice(

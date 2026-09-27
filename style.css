@@ -272,6 +272,13 @@ textarea {
   text-decoration-thickness: 1.5px;
 }
 
+.capitalisation-issue {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: #facc15;
+  text-decoration-thickness: 1.5px;
+}
+
 /* =========================
     Extras
    ========================= */

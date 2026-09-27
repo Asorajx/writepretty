@@ -27,6 +27,21 @@ async function loadDictionary() {
   dictionaryReady = true;
 }
 
+/* Checks whether a lowercase word is rejected but its capitalised form is recognised. */
+function isPossibleCapitalisationIssue(word) {
+  if (!dictionaryReady || !/^[a-z][A-Za-z']*$/.test(word)) {
+    return false;
+  }
+
+  const capitalisedWord =
+    word.charAt(0).toUpperCase() + word.slice(1);
+
+  return (
+    !spellChecker.check(word) &&
+    spellChecker.check(capitalisedWord)
+  );
+}
+
 /* Returns words that are not recognised by the dictionary. */
 function detectSpellingErrors(text) {
   if (!dictionaryReady) {
@@ -34,36 +49,69 @@ function detectSpellingErrors(text) {
   }
 
   const errors = [];
+  const words = text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) || [];
 
-  text.split(" ").forEach(word => {
-    const cleanWord = word.replace(/[.,!?]/g, "");
-
-    if (cleanWord && !spellChecker.check(cleanWord)) {
-      errors.push(cleanWord);
+  words.forEach(word => {
+    if (
+      !spellChecker.check(word) &&
+      !isPossibleCapitalisationIssue(word)
+    ) {
+      errors.push(word);
     }
   });
 
   return errors;
 }
 
-/* Displays misspelled words using the highlight layer behind the input. */
+/* Returns lowercase words that may need to begin with a capital letter. */
+function detectCapitalisationIssues(text) {
+  if (!dictionaryReady) {
+    return [];
+  }
+
+  const words = text.match(/\b[a-z][A-Za-z']*\b/g) || [];
+
+  return words.filter(word =>
+    isPossibleCapitalisationIssue(word)
+  );
+}
+
+/* Escapes user text before displaying it inside the highlight layer. */
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* Displays spelling and possible capitalisation issues behind the input. */
 function updateHighlights(text) {
-  const errors = detectSpellingErrors(text);
-  let highlightedText = text;
+  const spellingErrors = new Set(
+    detectSpellingErrors(text).map(word => word.toLowerCase())
+  );
 
-  errors.forEach(word => {
-    const regex = new RegExp(
-      "\\b" + word + "\\b",
-      "gi"
-    );
+  const capitalisationIssues = new Set(
+    detectCapitalisationIssues(text).map(word => word.toLowerCase())
+  );
 
-    highlightedText = highlightedText.replace(
-      regex,
-      `<span class="misspelled">$&</span>`
-    );
-  });
+  const parts = text.split(/(\b[A-Za-z]+(?:'[A-Za-z]+)?\b)/g);
 
-  highlightLayer.innerHTML = highlightedText.replace(/\n/g, "<br>");
+  const highlightedText = parts.map(part => {
+    const lowerCasePart = part.toLowerCase();
+
+    if (capitalisationIssues.has(lowerCasePart)) {
+      return `<span class="capitalisation-issue">${escapeHtml(part)}</span>`;
+    }
+
+    if (spellingErrors.has(lowerCasePart)) {
+      return `<span class="misspelled">${escapeHtml(part)}</span>`;
+    }
+
+    return escapeHtml(part);
+  }).join("");
+
+  highlightLayer.innerHTML =
+    highlightedText.replace(/\n/g, "<br>");
 }
 
 loadDictionary();
@@ -98,9 +146,20 @@ function trimWhitespace(text) {
   return text.trim();
 }
 
-/* Placeholder for the capitalisation correction feature. */
+/* Corrects capitalisation only when the intended change is clear. */
 function correctCapitalisation(text) {
-  return text;
+  let correctedText = text;
+
+  /* Capitalise the first letter of the text and letters after sentence-ending punctuation. */
+  correctedText = correctedText.replace(
+    /(^\s*|[.!?]\s+)([a-z])/g,
+    (match, prefix, letter) => prefix + letter.toUpperCase()
+  );
+
+  /* The standalone pronoun "i" should always be uppercase. */
+  correctedText = correctedText.replace(/\bi\b/g, "I");
+
+  return correctedText;
 }
 
 

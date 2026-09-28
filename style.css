@@ -220,6 +220,16 @@ body {
   cursor: not-allowed;
 }
 
+/* Keeps the combine view button at the bottom of the history rail. */
+.history-combine-button {
+  margin-top: auto;
+}
+
+.history-combine-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* The delete button only appears when the tab is being hovered or focused. */
 .history-delete-button {
   position: absolute;
@@ -425,7 +435,7 @@ textarea {
 
 
 /* =========================
-  Buttons
+   Buttons
    ========================= */
 
 .copy-container {
@@ -435,13 +445,15 @@ textarea {
 }
 
 #copyButton,
+#downloadButton,
 #historyToggleButton {
-  border: 1px solid rgba(125, 211, 252, 0.45);
-  border-radius: 14px;
   padding: 5px 14px;
 
   font-size: 13px;
   font-weight: 500;
+
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  border-radius: 14px;
 
   cursor: pointer;
 
@@ -453,8 +465,9 @@ textarea {
     transform 0.2s ease;
 }
 
-/* Copy keeps the normal accent styling. */
-#copyButton {
+/* Copy and Download use the normal accent styling. */
+#copyButton,
+#downloadButton {
   background: rgba(125, 211, 252, 0.18);
   color: var(--accent);
   box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
@@ -476,7 +489,15 @@ textarea {
   box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
 }
 
+/* Download is muted while disabled. */
+#downloadButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
 #copyButton:hover,
+#downloadButton:not(:disabled):hover,
 #historyToggleButton.active:hover {
   background: rgba(125, 211, 252, 0.28);
   transform: translateY(-1px);
@@ -489,18 +510,9 @@ textarea {
 }
 
 #copyButton:active,
+#downloadButton:not(:disabled):active,
 #historyToggleButton:active {
   transform: translateY(1px);
-}
-
-/* Keeps the combine view button at the bottom of the history rail. */
-.history-combine-button {
-  margin-top: auto;
-}
-
-.history-combine-button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 

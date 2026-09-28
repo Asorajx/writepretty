@@ -6,6 +6,7 @@ const inputText = document.getElementById("inputText");
 const outputText = document.getElementById("outputText");
 const highlightLayer = document.getElementById("highlightLayer");
 const copyButton = document.getElementById("copyButton");
+const downloadButton = document.getElementById("downloadButton");
 const historyToggleButton = document.getElementById("historyToggleButton");
 const historyTabs = document.querySelector(".history-tabs");
 const historyTabList = document.getElementById("historyTabList");
@@ -375,8 +376,10 @@ function syncHighlightScroll() {
 function displayText(text) {
   inputText.value = text;
   outputText.value = cleanText(text);
+
   updateHighlights(text);
   syncHighlightScroll();
+  updateDownloadButton();
 }
 
 /* Updates the editor when entering or leaving the combined history preview. */
@@ -388,7 +391,13 @@ function setCombinedView(active) {
     "combined-preview",
     active
   );
-} 
+}
+
+/* Disables downloading when there is no processed text. */
+function updateDownloadButton() {
+  downloadButton.disabled =
+    outputText.value.trim() === "";
+}
 
 
 /* =========================
@@ -625,6 +634,7 @@ inputText.addEventListener("input", () => {
   outputText.value = cleanText(inputText.value);
   updateHighlights(inputText.value);
   syncHighlightScroll();
+  updateDownloadButton();
 
   if (historyModeEnabled) {
     saveActiveHistoryEntry();
@@ -633,6 +643,24 @@ inputText.addEventListener("input", () => {
 
 /* Moves the highlight layer together with the original text. */
 inputText.addEventListener("scroll", syncHighlightScroll);
+
+/* Downloads the processed text as a plain text file. */
+downloadButton.addEventListener("click", () => {
+  const file = new Blob(
+    [outputText.value],
+    { type: "text/plain" }
+  );
+
+  const downloadUrl = URL.createObjectURL(file);
+  const link = document.createElement("a");
+
+  link.href = downloadUrl;
+  link.download = "writepretty-output.txt";
+
+  link.click();
+
+  URL.revokeObjectURL(downloadUrl);
+});
 
 /* Copies the processed text and briefly confirms that it was copied. */
 copyButton.addEventListener("click", () => {

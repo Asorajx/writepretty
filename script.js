@@ -11,6 +11,7 @@ const historyTabs = document.querySelector(".history-tabs");
 const historyTabList = document.getElementById("historyTabList");
 const newHistoryButton = document.getElementById("newHistoryButton");
 const combineHistoryButton = document.getElementById("combineHistoryButton");
+const originalPanel = document.querySelector(".original-panel");
 
 
 /* =========================
@@ -378,6 +379,17 @@ function displayText(text) {
   syncHighlightScroll();
 }
 
+/* Updates the editor when entering or leaving the combined history preview. */
+function setCombinedView(active) {
+  combinedViewActive = active;
+  inputText.readOnly = active;
+
+  originalPanel.classList.toggle(
+    "combined-preview",
+    active
+  );
+} 
+
 
 /* =========================
    History Mode
@@ -462,6 +474,13 @@ function renderHistoryTabs() {
     combinedViewActive
   );
 
+  combineHistoryButton.setAttribute(
+    "aria-label",
+    combinedViewActive
+      ? "Return to active history entry"
+      : "Show combined history"
+  );
+
   combineHistoryButton.disabled =
     historyEntries.length < 2;
 }
@@ -486,8 +505,7 @@ function switchHistoryEntry(id) {
     return;
   }
 
-  combinedViewActive = false;
-  inputText.readOnly = false;
+  setCombinedView(false);
 
   activeHistoryId = entry.id;
 
@@ -507,8 +525,7 @@ function createHistoryEntry(text = "") {
 
   saveActiveHistoryEntry();
 
-  combinedViewActive = false;
-  inputText.readOnly = false;
+  setCombinedView(false);
 
   const entry = {
     id: nextHistoryId,
@@ -571,16 +588,29 @@ function showCombinedHistory() {
 
   saveActiveHistoryEntry();
 
-  combinedViewActive = true;
+  setCombinedView(true);
 
   const combinedText = historyEntries
     .map(entry => entry.text)
     .join("\n");
 
   displayText(combinedText);
+  renderHistoryTabs();
+}
 
-  /* Combined view is only a preview, so editing is disabled. */
-  inputText.readOnly = true;
+/* Leaves the combined preview and returns to the previously active entry. */
+function leaveCombinedHistory() {
+  if (!combinedViewActive) {
+    return;
+  }
+
+  const activeEntry = getActiveHistoryEntry();
+
+  setCombinedView(false);
+
+  if (activeEntry) {
+    displayText(activeEntry.text);
+  }
 
   renderHistoryTabs();
 }
@@ -633,6 +663,42 @@ historyToggleButton.addEventListener("click", () => {
     "hidden",
     !historyModeEnabled
   );
+
+  /* Set up the editor when History Mode is turned on. */
+  if (historyModeEnabled) {
+    combinedViewActive = false;
+    inputText.readOnly = false;
+
+    /* Use the current editor text as the first history entry. */
+    if (historyEntries.length === 0) {
+      createHistoryEntry(inputText.value);
+      return;
+    }
+
+    /* Keep edits made while History Mode was off. */
+    const activeEntry = getActiveHistoryEntry();
+
+    if (activeEntry) {
+      activeEntry.text = inputText.value;
+    }
+
+    renderHistoryTabs();
+    return;
+  }
+
+  /* Combined view is only available while History Mode is enabled. */
+  if (combinedViewActive) {
+    combinedViewActive = false;
+    inputText.readOnly = false;
+
+    const activeEntry = getActiveHistoryEntry();
+
+    if (activeEntry) {
+      displayText(activeEntry.text);
+    }
+  }
+
+  renderHistoryTabs();
 });
 
 /* Creates a blank history entry when the plus button is clicked. */
@@ -682,6 +748,11 @@ inputText.addEventListener("paste", event => {
 
 /* Opens the combined history preview. */
 combineHistoryButton.addEventListener("click", () => {
+  if (combinedViewActive) {
+    leaveCombinedHistory();
+    return;
+  }
+
   showCombinedHistory();
 });
 

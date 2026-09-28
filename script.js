@@ -13,6 +13,8 @@ const historyTabList = document.getElementById("historyTabList");
 const newHistoryButton = document.getElementById("newHistoryButton");
 const combineHistoryButton = document.getElementById("combineHistoryButton");
 const originalPanel = document.querySelector(".original-panel");
+/* Tracks text areas moved automatically so their scroll events are not synced back. */
+const synchronisedScrollTargets = new WeakSet();
 
 
 /* =========================
@@ -399,6 +401,31 @@ function updateDownloadButton() {
     outputText.value.trim() === "";
 }
 
+/* Returns the current scroll position as a proportion of the available scroll area. */
+function getScrollRatio(element) {
+  const maxScroll =
+    element.scrollHeight - element.clientHeight;
+
+  if (maxScroll <= 0) {
+    return 0;
+  }
+
+  return element.scrollTop / maxScroll;
+}
+
+/* Scrolls another text area to the same proportional position. */
+function syncTextScroll(source, target) {
+  const ratio = getScrollRatio(source);
+
+  const targetMaxScroll =
+    target.scrollHeight - target.clientHeight;
+
+  synchronisedScrollTargets.add(target);
+
+  target.scrollTop =
+    ratio * targetMaxScroll;
+}
+
 
 /* =========================
    History Mode
@@ -641,8 +668,28 @@ inputText.addEventListener("input", () => {
   }
 });
 
-/* Moves the highlight layer together with the original text. */
-inputText.addEventListener("scroll", syncHighlightScroll);
+/* Keeps the processed text and highlight layer aligned while the original text scrolls. */
+inputText.addEventListener("scroll", () => {
+  syncHighlightScroll();
+
+  if (synchronisedScrollTargets.has(inputText)) {
+    synchronisedScrollTargets.delete(inputText);
+    return;
+  }
+
+  syncTextScroll(inputText, outputText);
+});
+
+/* Keeps the original text aligned while the processed text scrolls. */
+outputText.addEventListener("scroll", () => {
+  if (synchronisedScrollTargets.has(outputText)) {
+    synchronisedScrollTargets.delete(outputText);
+    return;
+  }
+
+  syncTextScroll(outputText, inputText);
+  syncHighlightScroll();
+});
 
 /* Downloads the processed text as a plain text file. */
 downloadButton.addEventListener("click", () => {

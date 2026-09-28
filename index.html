@@ -64,23 +64,54 @@
         </div>
       </div>
 
-      <!-- Displays the cleaned text and provides the copy action. -->
-      <div class="text-panel">
-        <div class="monitor-screen">
-          <div class="panel-header">
-            <h2>Processed Text</h2>
+      <!-- Displays the cleaned text, copy action, and attached history tabs. -->
+      <div class="processed-history-shell">
 
-            <button id="copyButton">
-              Copy
-            </button>
+        <div class="text-panel processed-panel">
+          <div class="monitor-screen">
+            <div class="panel-header">
+              <h2>Processed Text</h2>
+
+              <div class="panel-actions">
+                <button
+                  id="historyToggleButton"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  History
+                </button>
+
+                <button id="copyButton" type="button">
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <textarea
+              id="outputText"
+              placeholder="Your cleaned text will appear here..."
+              readonly
+            ></textarea>
           </div>
-
-          <textarea
-            id="outputText"
-            placeholder="Your cleaned text will appear here..."
-            readonly
-          ></textarea>
         </div>
+
+        <!-- Vertical tabs for stored text entries. -->
+        <aside class="history-tabs hidden" aria-label="Text history">
+
+          <!-- History entry tabs are created by JavaScript. -->
+          <div id="historyTabList"></div>
+
+          <button
+            id="newHistoryButton"
+            class="history-tab history-add-button"
+            type="button"
+            aria-label="Create new history entry"
+          >
+            +
+          </button>
+
+        </aside>
+
       </div>
 
     </div>

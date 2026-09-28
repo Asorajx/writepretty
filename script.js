@@ -6,6 +6,16 @@ const inputText = document.getElementById("inputText");
 const outputText = document.getElementById("outputText");
 const highlightLayer = document.getElementById("highlightLayer");
 const copyButton = document.getElementById("copyButton");
+const historyToggleButton = document.getElementById("historyToggleButton");
+const historyTabs = document.querySelector(".history-tabs");
+const historyTabList = document.getElementById("historyTabList");
+const newHistoryButton = document.getElementById("newHistoryButton");
+
+let historyModeEnabled = false;
+let historyEntries = [];
+let activeHistoryId = null;
+let nextHistoryId = 1;
+const MAX_HISTORY_ENTRIES = 5;
 
 
 /* =========================
@@ -342,6 +352,183 @@ function correctCapitalisation(text) {
 
 
 /* =========================
+   History Mode
+   ========================= */
+
+/* Returns the history entry currently open in the editor. */
+function getActiveHistoryEntry() {
+  return historyEntries.find(
+    entry => entry.id === activeHistoryId
+  );
+}
+
+/* Saves the editor text into the currently active history entry. */
+function saveActiveHistoryEntry() {
+  const activeEntry = getActiveHistoryEntry();
+
+  if (!activeEntry) {
+    return;
+  }
+
+  activeEntry.text = inputText.value;
+}
+
+/* Creates the numbered buttons shown inside the history rail. */
+function renderHistoryTabs() {
+  historyTabList.innerHTML = "";
+
+  historyEntries.forEach((entry, index) => {
+    const item = document.createElement("div");
+    item.classList.add("history-tab-item");
+
+    const tab = document.createElement("button");
+
+    tab.classList.add("history-tab");
+    tab.type = "button";
+    tab.textContent = index + 1;
+
+    tab.setAttribute(
+      "aria-label",
+      `History entry ${index + 1}`
+    );
+
+    if (entry.id === activeHistoryId) {
+      tab.classList.add("active");
+    }
+
+    tab.addEventListener("click", () => {
+      switchHistoryEntry(entry.id);
+    });
+
+    const deleteButton = document.createElement("button");
+
+    deleteButton.classList.add("history-delete-button");
+    deleteButton.type = "button";
+    deleteButton.textContent = "×";
+
+    deleteButton.setAttribute(
+      "aria-label",
+      `Delete history entry ${index + 1}`
+    );
+
+    deleteButton.addEventListener("click", event => {
+      /* Prevent the click from also opening the history tab. */
+      event.stopPropagation();
+
+      deleteHistoryEntry(entry.id);
+    });
+
+    /* Disable new tabs if limit of 5 is reached */
+    newHistoryButton.disabled = historyEntries.length >= MAX_HISTORY_ENTRIES;
+
+    item.appendChild(tab);
+    item.appendChild(deleteButton);
+
+    historyTabList.appendChild(item);
+  });
+}
+
+/* Opens one stored entry in the editor. */
+function switchHistoryEntry(id) {
+  if (!historyModeEnabled || id === activeHistoryId) {
+    return;
+  }
+
+  saveActiveHistoryEntry();
+
+  const entry = historyEntries.find(
+    historyEntry => historyEntry.id === id
+  );
+
+  if (!entry) {
+    return;
+  }
+
+  activeHistoryId = entry.id;
+
+  inputText.value = entry.text;
+  outputText.value = cleanText(entry.text);
+
+  updateHighlights(entry.text);
+  syncHighlightScroll();
+  renderHistoryTabs();
+}
+
+/* Creates and opens a new history entry. */
+function createHistoryEntry(text = "") {
+  if (!historyModeEnabled) {
+    return;
+  }
+
+  if (historyEntries.length >= MAX_HISTORY_ENTRIES) {
+    return;
+  }
+
+  saveActiveHistoryEntry();
+
+  const entry = {
+    id: nextHistoryId,
+    text
+  };
+
+  nextHistoryId += 1;
+
+  historyEntries.push(entry);
+  activeHistoryId = entry.id;
+
+  inputText.value = text;
+  outputText.value = cleanText(text);
+
+  updateHighlights(text);
+  syncHighlightScroll();
+  renderHistoryTabs();
+}
+
+/* Removes one history entry and opens a nearby entry if needed. */
+function deleteHistoryEntry(id) {
+  if (!historyModeEnabled) {
+    return;
+  }
+
+  const entryIndex = historyEntries.findIndex(
+    entry => entry.id === id
+  );
+
+  if (entryIndex === -1) {
+    return;
+  }
+
+  const deletingActiveEntry = id === activeHistoryId;
+
+  historyEntries.splice(entryIndex, 1);
+
+  if (historyEntries.length === 0) {
+    createHistoryEntry("");
+    return;
+  }
+
+  if (deletingActiveEntry) {
+    const nextIndex = Math.min(
+      entryIndex,
+      historyEntries.length - 1
+    );
+
+    activeHistoryId = historyEntries[nextIndex].id;
+
+    const activeEntry = historyEntries[nextIndex];
+
+    inputText.value = activeEntry.text;
+    outputText.value = cleanText(activeEntry.text);
+
+    updateHighlights(activeEntry.text);
+    syncHighlightScroll();
+  }
+
+  renderHistoryTabs();
+}
+
+
+/* =========================
    Event Listeners
    ========================= */
 
@@ -356,6 +543,10 @@ inputText.addEventListener("input", () => {
   outputText.value = cleanText(inputText.value);
   updateHighlights(inputText.value);
   syncHighlightScroll();
+
+  if (historyModeEnabled) {
+    saveActiveHistoryEntry();
+  }
 });
 
 /* Moves the highlight layer together with the original text. */
@@ -372,6 +563,71 @@ copyButton.addEventListener("click", () => {
   }, 1500);
 });
 
+/* Turns History Mode on or off. */
+historyToggleButton.addEventListener("click", () => {
+  historyModeEnabled = !historyModeEnabled;
+
+  historyToggleButton.classList.toggle(
+    "active",
+    historyModeEnabled
+  );
+
+  historyToggleButton.setAttribute(
+    "aria-pressed",
+    historyModeEnabled
+  );
+
+  historyTabs.classList.toggle(
+    "hidden",
+    !historyModeEnabled
+  );
+});
+
+/* Creates a blank history entry when the plus button is clicked. */
+newHistoryButton.addEventListener("click", () => {
+  if (!historyModeEnabled) {
+    return;
+  }
+
+  createHistoryEntry("");
+  inputText.focus();
+});
+
+/* Creates a new history entry when pasting over existing text. */
+inputText.addEventListener("paste", event => {
+  if (!historyModeEnabled || inputText.value === "") {
+    return;
+  }
+
+  event.preventDefault();
+
+  const pastedText =
+    event.clipboardData.getData("text");
+
+  const selectionStart = inputText.selectionStart;
+  const selectionEnd = inputText.selectionEnd;
+
+  const currentText = inputText.value;
+
+  const newText =
+    currentText.slice(0, selectionStart) +
+    pastedText +
+    currentText.slice(selectionEnd);
+
+  createHistoryEntry(newText);
+
+  /* Place the cursor immediately after the pasted content. */
+  const newCursorPosition =
+    selectionStart + pastedText.length;
+
+  inputText.setSelectionRange(
+    newCursorPosition,
+    newCursorPosition
+  );
+
+  inputText.focus();
+});
+
 
 /* =========================
    Rain Effect
@@ -385,13 +641,13 @@ for (let i = 0; i < 70; i++) {
   drop.classList.add("rain-drop");
   drop.style.left = Math.random() * 100 + "%";
 
-  // Shorter / longer droplets
+  /* Shorter / longer droplets */
   drop.style.height = (12 + Math.random() * 20) + "px";
 
-  // Slight variation in thickness
+  /* Slight variation in thickness */
   drop.style.width = (1 + Math.random() * 1.2) + "px";
 
-  // Different visibility
+  /* Different visibility */
   drop.style.opacity = 0.3 + Math.random() * 0.5;
 
   drop.style.animationDuration =

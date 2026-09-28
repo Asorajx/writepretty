@@ -409,7 +409,7 @@ textarea {
 
 
 /* =========================
-   Copy and History Button
+  Buttons
    ========================= */
 
 .copy-container {
@@ -475,6 +475,16 @@ textarea {
 #copyButton:active,
 #historyToggleButton:active {
   transform: translateY(1px);
+}
+
+/* Keeps the combine view button at the bottom of the history rail. */
+.history-combine-button {
+  margin-top: auto;
+}
+
+.history-combine-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 

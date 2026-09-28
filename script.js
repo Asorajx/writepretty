@@ -10,11 +10,20 @@ const historyToggleButton = document.getElementById("historyToggleButton");
 const historyTabs = document.querySelector(".history-tabs");
 const historyTabList = document.getElementById("historyTabList");
 const newHistoryButton = document.getElementById("newHistoryButton");
+const combineHistoryButton = document.getElementById("combineHistoryButton");
+
+
+/* =========================
+   Application State
+   ========================= */
 
 let historyModeEnabled = false;
 let historyEntries = [];
 let activeHistoryId = null;
 let nextHistoryId = 1;
+let combinedViewActive = false;
+
+/* Max number of tabs allowed */
 const MAX_HISTORY_ENTRIES = 5;
 
 
@@ -352,6 +361,25 @@ function correctCapitalisation(text) {
 
 
 /* =========================
+   Editor Display Helpers
+   ========================= */
+
+/* Keeps the highlight layer aligned with the textarea while scrolling. */
+function syncHighlightScroll() {
+  highlightLayer.scrollTop = inputText.scrollTop;
+  highlightLayer.scrollLeft = inputText.scrollLeft;
+}
+
+/* Displays text in both editor panels and refreshes the highlight layer. */
+function displayText(text) {
+  inputText.value = text;
+  outputText.value = cleanText(text);
+  updateHighlights(text);
+  syncHighlightScroll();
+}
+
+
+/* =========================
    History Mode
    ========================= */
 
@@ -364,6 +392,10 @@ function getActiveHistoryEntry() {
 
 /* Saves the editor text into the currently active history entry. */
 function saveActiveHistoryEntry() {
+  if (combinedViewActive) {
+    return;
+  }
+
   const activeEntry = getActiveHistoryEntry();
 
   if (!activeEntry) {
@@ -392,7 +424,7 @@ function renderHistoryTabs() {
       `History entry ${index + 1}`
     );
 
-    if (entry.id === activeHistoryId) {
+    if (entry.id === activeHistoryId && !combinedViewActive) {
       tab.classList.add("active");
     }
 
@@ -412,25 +444,35 @@ function renderHistoryTabs() {
     );
 
     deleteButton.addEventListener("click", event => {
-      /* Prevent the click from also opening the history tab. */
       event.stopPropagation();
-
       deleteHistoryEntry(entry.id);
     });
-
-    /* Disable new tabs if limit of 5 is reached */
-    newHistoryButton.disabled = historyEntries.length >= MAX_HISTORY_ENTRIES;
 
     item.appendChild(tab);
     item.appendChild(deleteButton);
 
     historyTabList.appendChild(item);
   });
+
+  newHistoryButton.disabled =
+    historyEntries.length >= MAX_HISTORY_ENTRIES;
+
+  combineHistoryButton.classList.toggle(
+    "active",
+    combinedViewActive
+  );
+
+  combineHistoryButton.disabled =
+    historyEntries.length < 2;
 }
 
 /* Opens one stored entry in the editor. */
 function switchHistoryEntry(id) {
-  if (!historyModeEnabled || id === activeHistoryId) {
+  if (!historyModeEnabled) {
+    return;
+  }
+
+  if (id === activeHistoryId && !combinedViewActive) {
     return;
   }
 
@@ -444,13 +486,12 @@ function switchHistoryEntry(id) {
     return;
   }
 
+  combinedViewActive = false;
+  inputText.readOnly = false;
+
   activeHistoryId = entry.id;
 
-  inputText.value = entry.text;
-  outputText.value = cleanText(entry.text);
-
-  updateHighlights(entry.text);
-  syncHighlightScroll();
+  displayText(entry.text);
   renderHistoryTabs();
 }
 
@@ -466,6 +507,9 @@ function createHistoryEntry(text = "") {
 
   saveActiveHistoryEntry();
 
+  combinedViewActive = false;
+  inputText.readOnly = false;
+
   const entry = {
     id: nextHistoryId,
     text
@@ -476,11 +520,7 @@ function createHistoryEntry(text = "") {
   historyEntries.push(entry);
   activeHistoryId = entry.id;
 
-  inputText.value = text;
-  outputText.value = cleanText(text);
-
-  updateHighlights(text);
-  syncHighlightScroll();
+  displayText(text);
   renderHistoryTabs();
 }
 
@@ -517,12 +557,30 @@ function deleteHistoryEntry(id) {
 
     const activeEntry = historyEntries[nextIndex];
 
-    inputText.value = activeEntry.text;
-    outputText.value = cleanText(activeEntry.text);
-
-    updateHighlights(activeEntry.text);
-    syncHighlightScroll();
+    displayText(activeEntry.text);
   }
+
+  renderHistoryTabs();
+}
+
+/* Combine all history entries together without creating a new entry. */
+function showCombinedHistory() {
+  if (!historyModeEnabled || historyEntries.length < 2) {
+    return;
+  }
+
+  saveActiveHistoryEntry();
+
+  combinedViewActive = true;
+
+  const combinedText = historyEntries
+    .map(entry => entry.text)
+    .join("\n");
+
+  displayText(combinedText);
+
+  /* Combined view is only a preview, so editing is disabled. */
+  inputText.readOnly = true;
 
   renderHistoryTabs();
 }
@@ -531,12 +589,6 @@ function deleteHistoryEntry(id) {
 /* =========================
    Event Listeners
    ========================= */
-
-/* Keeps the highlight layer aligned with the textarea while scrolling. */
-function syncHighlightScroll() {
-  highlightLayer.scrollTop = inputText.scrollTop;
-  highlightLayer.scrollLeft = inputText.scrollLeft;
-}
 
 /* Processes the text and refreshes highlights as the user types. */
 inputText.addEventListener("input", () => {
@@ -626,6 +678,11 @@ inputText.addEventListener("paste", event => {
   );
 
   inputText.focus();
+});
+
+/* Opens the combined history preview. */
+combineHistoryButton.addEventListener("click", () => {
+  showCombinedHistory();
 });
 
 

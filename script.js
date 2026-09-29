@@ -13,8 +13,9 @@ const historyTabList = document.getElementById("historyTabList");
 const newHistoryButton = document.getElementById("newHistoryButton");
 const combineHistoryButton = document.getElementById("combineHistoryButton");
 const originalPanel = document.querySelector(".original-panel");
-/* Tracks text areas moved automatically so their scroll events are not synced back. */
-const synchronisedScrollTargets = new WeakSet();
+const synchronisedScrollTargets = new WeakSet(); /* Tracks text areas moved automatically so their scroll events are not synced back. */
+const wordCount = document.getElementById("wordCount");
+const characterCount = document.getElementById("characterCount");
 
 
 /* =========================
@@ -374,10 +375,30 @@ function syncHighlightScroll() {
   highlightLayer.scrollLeft = inputText.scrollLeft;
 }
 
+/* Updates the processed text word and character counts. */
+function updateTextStats(text) {
+  const trimmedText = text.trim();
+
+  const words =
+    trimmedText === ""
+      ? 0
+      : trimmedText.split(/\s+/).length;
+
+  const characters = text.length;
+
+  wordCount.textContent =
+    `${words} ${words === 1 ? "word" : "words"}`;
+
+  characterCount.textContent =
+    `${characters} ${characters === 1 ? "character" : "characters"}`;
+}
+
 /* Displays text in both editor panels and refreshes the highlight layer. */
 function displayText(text) {
   inputText.value = text;
   outputText.value = cleanText(text);
+
+  updateTextStats(outputText.value);
 
   updateHighlights(text);
   syncHighlightScroll();
@@ -659,6 +680,7 @@ function leaveCombinedHistory() {
 /* Processes the text and refreshes highlights as the user types. */
 inputText.addEventListener("input", () => {
   outputText.value = cleanText(inputText.value);
+  updateTextStats(outputText.value);
   updateHighlights(inputText.value);
   syncHighlightScroll();
   updateDownloadButton();

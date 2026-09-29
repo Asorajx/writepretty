@@ -67,28 +67,40 @@
       <!-- Displays the cleaned text, copy action, and attached history tabs. -->
       <div class="processed-history-shell">
 
+        <!-- Toolbar for processed-text information and actions. -->
+        <div class="pretty-toolbar">
+
+          <div class="text-stats" aria-live="polite">
+            <span id="wordCount">0 words</span>
+            <span class="stat-separator">·</span>
+            <span id="characterCount">0 characters</span>
+          </div>
+
+          <div class="panel-actions">
+            <button
+              id="historyToggleButton"
+              type="button"
+              aria-pressed="false"
+            >
+              History
+            </button>
+
+            <button id="downloadButton" type="button" disabled>
+              Download
+            </button>
+
+            <button id="copyButton" type="button">
+              Copy
+            </button>
+          </div>
+
+        </div>
+
         <div class="text-panel processed-panel">
           <div class="monitor-screen">
+
             <div class="panel-header">
               <h2>Pretty</h2>
-
-              <div class="panel-actions">
-                <button
-                  id="historyToggleButton"
-                  type="button"
-                  aria-pressed="false"
-                >
-                  History
-                </button>
-
-                <button id="downloadButton" type="button" disabled>
-                  Download
-                </button>
-
-                <button id="copyButton" type="button">
-                  Copy
-                </button>
-              </div>
             </div>
 
             <textarea
@@ -96,6 +108,7 @@
               placeholder="Your cleaned text will appear here..."
               readonly
             ></textarea>
+
           </div>
         </div>
 

@@ -91,7 +91,7 @@ body {
 }
 
 .hero {
-  padding-top: 80px;
+  padding-top: 55px;
   text-align: center;
 }
 
@@ -102,13 +102,13 @@ body {
 }
 
 .hero p {
-  max-width: 46ch;
+  max-width: 700px;
   margin: auto;
   color: var(--muted);
 }
 
 .editor-section {
-  padding: 50px 0 120px;
+  padding: 72px 0 120px;
 }
 
 .editor-layout {
@@ -122,6 +122,43 @@ body {
 .processed-history-shell {
   position: relative;
   width: 100%;
+}
+
+/* Top toolbar above the processed text panel. */
+.pretty-toolbar {
+  position: absolute;
+  top: -46px;
+  left: 6px;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: calc(100% - 12px);
+  min-height: 40px;
+  padding: 7px 10px;
+
+  background: rgba(31, 41, 55, 0.3);
+  border-radius: 10px 10px 3px 3px;
+  box-shadow: 6px -4px 18px rgba(0, 0, 0, 0.22);
+}
+
+.text-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--muted);
+
+  font-size: 14px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.stat-separator {
+  opacity: 0.5;
 }
 
 .processed-panel {

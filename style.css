@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
   --text: #e5e7eb;
@@ -97,7 +97,7 @@ body {
 
 .hero h1 {
   margin: 0 0 18px;
-  font-size: clamp(34px,5vw,52px);
+  font-size: clamp(34px, 4.2vw, 48px);
   line-height: 1.2;
 }
 
@@ -127,7 +127,7 @@ body {
 /* Top toolbar above the processed text panel. */
 .pretty-toolbar {
   position: absolute;
-  top: -46px;
+  top: -42px;
   left: 6px;
   z-index: 1;
 
@@ -152,7 +152,7 @@ body {
   color: var(--muted);
 
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
 
   white-space: nowrap;
 }
@@ -394,8 +394,6 @@ body {
 
   white-space: pre-wrap;
   word-wrap: break-word;
-
-  box-sizing: border-box;
 }
 
 #highlightLayer {
@@ -474,12 +472,6 @@ textarea {
 /* =========================
    Buttons
    ========================= */
-
-.copy-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
 
 #copyButton,
 #downloadButton,

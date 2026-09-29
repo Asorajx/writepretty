@@ -13,7 +13,6 @@ const historyTabList = document.getElementById("historyTabList");
 const newHistoryButton = document.getElementById("newHistoryButton");
 const combineHistoryButton = document.getElementById("combineHistoryButton");
 const originalPanel = document.querySelector(".original-panel");
-const synchronisedScrollTargets = new WeakSet(); /* Tracks text areas moved automatically so their scroll events are not synced back. */
 const wordCount = document.getElementById("wordCount");
 const characterCount = document.getElementById("characterCount");
 
@@ -23,10 +22,13 @@ const characterCount = document.getElementById("characterCount");
    ========================= */
 
 let historyModeEnabled = false;
-let historyEntries = [];
+const historyEntries = [];
 let activeHistoryId = null;
 let nextHistoryId = 1;
 let combinedViewActive = false;
+
+/* Tracks text areas moved automatically so their scroll events are not synced back. */
+const synchronisedScrollTargets = new WeakSet();
 
 /* Max number of tabs allowed */
 const MAX_HISTORY_ENTRIES = 5;
@@ -50,6 +52,14 @@ async function loadDictionary() {
   spellChecker = new Typo("en_US", aff, dic);
   dictionaryReady = true;
 }
+
+/* Removes URLs and email addresses from text before language checks. */
+function removeProtectedText(text) {
+  return text
+    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, " ")
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, " ");
+}
+
 
 /* Checks whether a lowercase word is rejected but its capitalised form is recognised. */
 function isPossibleCapitalisationIssue(word) {
@@ -131,13 +141,6 @@ function detectFormattingIssues(text) {
   }
 
   return issues;
-}
-
-/* Removes URLs and email addresses from text before language checks. */
-function removeProtectedText(text) {
-  return text
-    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, " ")
-    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, " ");
 }
 
 /* Escapes user text before displaying it inside the highlight layer. */
@@ -393,16 +396,20 @@ function updateTextStats(text) {
     `${characters} ${characters === 1 ? "character" : "characters"}`;
 }
 
-/* Displays text in both editor panels and refreshes the highlight layer. */
-function displayText(text) {
-  inputText.value = text;
+/* Refreshes the processed output and related editor UI. */
+function refreshEditor(text) {
   outputText.value = cleanText(text);
 
   updateTextStats(outputText.value);
-
   updateHighlights(text);
   syncHighlightScroll();
   updateDownloadButton();
+}
+
+/* Displays text in both editor panels and refreshes the highlight layer. */
+function displayText(text) {
+  inputText.value = text;
+  refreshEditor(text);
 }
 
 /* Updates the editor when entering or leaving the combined history preview. */
@@ -679,11 +686,7 @@ function leaveCombinedHistory() {
 
 /* Processes the text and refreshes highlights as the user types. */
 inputText.addEventListener("input", () => {
-  outputText.value = cleanText(inputText.value);
-  updateTextStats(outputText.value);
-  updateHighlights(inputText.value);
-  syncHighlightScroll();
-  updateDownloadButton();
+  refreshEditor(inputText.value);
 
   if (historyModeEnabled) {
     saveActiveHistoryEntry();

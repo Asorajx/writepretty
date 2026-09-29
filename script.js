@@ -605,7 +605,7 @@ function createHistoryEntry(text = "") {
   renderHistoryTabs();
 }
 
-/* Removes one history entry and opens a nearby entry if needed. */
+/* Removes one history entry and updates the current history view. */
 function deleteHistoryEntry(id) {
   if (!historyModeEnabled) {
     return;
@@ -625,6 +625,36 @@ function deleteHistoryEntry(id) {
 
   if (historyEntries.length === 0) {
     createHistoryEntry("");
+    return;
+  }
+
+  /* Keep Combined View updated after an entry is deleted. */
+  if (combinedViewActive) {
+    if (deletingActiveEntry) {
+      const nextIndex = Math.min(
+        entryIndex,
+        historyEntries.length - 1
+      );
+
+      activeHistoryId = historyEntries[nextIndex].id;
+    }
+
+    /* Combined View is no longer needed when only one entry remains. */
+    if (historyEntries.length === 1) {
+      activeHistoryId = historyEntries[0].id;
+
+      setCombinedView(false);
+      displayText(historyEntries[0].text);
+      renderHistoryTabs();
+      return;
+    }
+
+    const combinedText = historyEntries
+      .map(entry => entry.text)
+      .join("\n");
+
+    displayText(combinedText);
+    renderHistoryTabs();
     return;
   }
 

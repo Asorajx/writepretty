@@ -15,6 +15,11 @@ const combineHistoryButton = document.getElementById("combineHistoryButton");
 const originalPanel = document.querySelector(".original-panel");
 const wordCount = document.getElementById("wordCount");
 const characterCount = document.getElementById("characterCount");
+const controlsButton = document.getElementById("controlsButton");
+const controlsView = document.getElementById("controlsView");
+const controlsSaveButton = document.getElementById("controlsSaveButton");
+const editorWrapper = document.querySelector(".editor-wrapper");
+const editorView = document.getElementById("editorView");
 
 
 /* =========================
@@ -721,6 +726,19 @@ inputText.addEventListener("input", () => {
   if (historyModeEnabled) {
     saveActiveHistoryEntry();
   }
+});
+
+/* Switch to Control menu */
+controlsButton.addEventListener("click", () => {
+  editorView.classList.add("hidden");
+  controlsView.classList.remove("hidden");
+  controlsButton.classList.add("active");
+});
+
+controlsSaveButton.addEventListener("click", () => {
+  controlsView.classList.add("hidden");
+  editorView.classList.remove("hidden");
+  controlsButton.classList.remove("active");
 });
 
 /* Keeps the processed text and highlight layer aligned while the original text scrolls. */

@@ -44,22 +44,111 @@
     <div class="container editor-layout">
 
       <!-- Original text input and spelling highlight layer. -->
-      <div class="text-panel original-panel">
-        <div class="monitor-screen">
-          <div class="panel-header">
-            <h2>Original</h2>
+      <div class="original-editor-shell">
+
+        <!-- Toolbar for processing settings and user guidance. -->
+        <div class="original-toolbar">
+
+          <div class="panel-actions">
+            <button
+              id="controlsButton"
+              type="button"
+            >
+              Controls
+            </button>
+
+            <button
+              id="helpButton"
+              type="button"
+            >
+              Help
+            </button>
           </div>
 
-          <div class="editor-wrapper">
-            <div id="highlightLayer"></div>
+        </div>
 
-            <textarea
-              id="inputText"
-              placeholder="Paste your text here..."
-              spellcheck="false"
-            ></textarea>
+        <div class="text-panel original-panel">
+          <div class="monitor-screen">
+
+            <div class="panel-header">
+              <h2>Original</h2>
+            </div>
+
+            <div id="editorView">
+              <div class="editor-wrapper">
+                <div id="highlightLayer"></div>
+                <textarea
+                  id="inputText"
+                  placeholder="Paste your text here..."
+                  spellcheck="false"
+                ></textarea>
+              </div>
+            </div>
+
+            <div id="controlsView" class="hidden">
+
+              <div class="controls-group">
+                <h4>Cleanup</h4>
+                <label
+                  id="extraSpacesControl"
+                  class="control-option active"
+                >
+                  <span class="control-box"></span>
+                  <span>Spaces</span>
+                </label>
+                <label
+                  id="punctuationControl"
+                  class="control-option active"
+                >
+                  <span class="control-box"></span>
+                  <span>Punctuation</span>
+                </label>
+                <label
+                  id="capitalisationControl"
+                  class="control-option active"
+                >
+                  <span class="control-box"></span>
+                  <span>Capitalisation</span>
+                </label>
+              </div>
+
+              <div class="controls-group">
+                <h4>Markdown</h4>
+                <label
+                  id="headingControl"
+                  class="control-option"
+                >
+                  <span class="control-box"></span>
+                  <span>Headings (#)</span>
+                </label>
+                <label
+                  id="bulletControl"
+                  class="control-option"
+                >
+                  <span class="control-box"></span>
+                  <span>Bullets (-)</span>
+                </label>
+                <label
+                  id="emphasisControl"
+                  class="control-option"
+                >
+                  <span class="control-box"></span>
+                  <span>Emphasis (*)</span>
+                </label>
+              </div>
+
+              <button
+                id="controlsSaveButton"
+                type="button"
+              >
+                Save
+              </button>
+
+            </div>
+
           </div>
         </div>
+
       </div>
 
       <!-- Displays the cleaned text, copy action, and attached history tabs. -->

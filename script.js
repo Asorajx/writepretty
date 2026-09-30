@@ -4,7 +4,6 @@
 
 const inputText = document.getElementById("inputText");
 const outputText = document.getElementById("outputText");
-const highlightLayer = document.getElementById("highlightLayer");
 const copyButton = document.getElementById("copyButton");
 const downloadButton = document.getElementById("downloadButton");
 const historyToggleButton = document.getElementById("historyToggleButton");
@@ -40,80 +39,8 @@ const MAX_HISTORY_ENTRIES = 5;
 
 
 /* =========================
-   Spell Checker
+   Formatting Checks
    ========================= */
-
-let spellChecker = null;
-let dictionaryReady = false;
-
-/* Loads the local Hunspell dictionary before spelling checks can run. */
-async function loadDictionary() {
-  const aff = await fetch("dictionaries/en_US-large.aff")
-    .then(response => response.text());
-
-  const dic = await fetch("dictionaries/en_US-large.dic")
-    .then(response => response.text());
-
-  spellChecker = new Typo("en_US", aff, dic);
-  dictionaryReady = true;
-}
-
-/* Removes URLs and email addresses from text before language checks. */
-function removeProtectedText(text) {
-  return text
-    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, " ")
-    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, " ");
-}
-
-
-/* Checks whether a lowercase word is rejected but its capitalised form is recognised. */
-function isPossibleCapitalisationIssue(word) {
-  if (!dictionaryReady || !/^[a-z][A-Za-z']*$/.test(word)) {
-    return false;
-  }
-
-  const capitalisedWord =
-    word.charAt(0).toUpperCase() + word.slice(1);
-
-  return (
-    !spellChecker.check(word) &&
-    spellChecker.check(capitalisedWord)
-  );
-}
-
-/* Returns words that are not recognised by the dictionary. */
-function detectSpellingErrors(text) {
-  if (!dictionaryReady) {
-    return [];
-  }
-
-  const errors = [];
-  const words = removeProtectedText(text).match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) || [];
-
-  words.forEach(word => {
-    if (
-      !spellChecker.check(word) &&
-      !isPossibleCapitalisationIssue(word)
-    ) {
-      errors.push(word);
-    }
-  });
-
-  return errors;
-}
-
-/* Returns lowercase words that may need to begin with a capital letter. */
-function detectCapitalisationIssues(text) {
-  if (!dictionaryReady) {
-    return [];
-  }
-
-  const words = removeProtectedText(text).match(/\b[a-z][A-Za-z']*\b/g) || [];
-
-  return words.filter(word =>
-    isPossibleCapitalisationIssue(word)
-  );
-}
 
 /* Finds punctuation that may be missing a space after it. */
 function detectFormattingIssues(text) {
@@ -147,70 +74,6 @@ function detectFormattingIssues(text) {
 
   return issues;
 }
-
-/* Escapes user text before displaying it inside the highlight layer. */
-function escapeHtml(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-/* Displays spelling, capitalisation, and formatting issues behind the input. */
-function updateHighlights(text) {
-  const spellingErrors = new Set(
-    detectSpellingErrors(text).map(word => word.toLowerCase())
-  );
-
-  const capitalisationIssues = new Set(
-    detectCapitalisationIssues(text).map(word => word.toLowerCase())
-  );
-
-  const formattingIssues = detectFormattingIssues(text);
-
-  const formattingIndexes = new Set(
-    formattingIssues.map(issue => issue.index)
-  );
-
-  const wordPattern = /[A-Za-z]+(?:'[A-Za-z]+)?/g;
-
-  let highlightedText = "";
-  let lastIndex = 0;
-  let match;
-
-  while ((match = wordPattern.exec(text)) !== null) {
-    highlightedText += escapeHtml(
-      text.slice(lastIndex, match.index)
-    );
-
-    const word = match[0];
-    const lowerCaseWord = word.toLowerCase();
-
-    if (formattingIndexes.has(match.index)) {
-      highlightedText +=
-        `<span class="formatting-issue">${escapeHtml(word)}</span>`;
-    } else if (capitalisationIssues.has(lowerCaseWord)) {
-      highlightedText +=
-        `<span class="capitalisation-issue">${escapeHtml(word)}</span>`;
-    } else if (spellingErrors.has(lowerCaseWord)) {
-      highlightedText +=
-        `<span class="misspelled">${escapeHtml(word)}</span>`;
-    } else {
-      highlightedText += escapeHtml(word);
-    }
-
-    lastIndex = wordPattern.lastIndex;
-  }
-
-  highlightedText += escapeHtml(
-    text.slice(lastIndex)
-  );
-
-  highlightLayer.innerHTML =
-    highlightedText.replace(/\n/g, "<br>");
-}
-
-loadDictionary();
 
 
 /* =========================
@@ -377,12 +240,6 @@ function correctCapitalisation(text) {
    Editor Display Helpers
    ========================= */
 
-/* Keeps the highlight layer aligned with the textarea while scrolling. */
-function syncHighlightScroll() {
-  highlightLayer.scrollTop = inputText.scrollTop;
-  highlightLayer.scrollLeft = inputText.scrollLeft;
-}
-
 /* Updates the processed text word and character counts. */
 function updateTextStats(text) {
   const trimmedText = text.trim();
@@ -406,8 +263,6 @@ function refreshEditor(text) {
   outputText.value = cleanText(text);
 
   updateTextStats(outputText.value);
-  updateHighlights(text);
-  syncHighlightScroll();
   updateDownloadButton();
 }
 
@@ -719,7 +574,7 @@ function leaveCombinedHistory() {
    Event Listeners
    ========================= */
 
-/* Processes the text and refreshes highlights as the user types. */
+/* Processes the text as the user types. */
 inputText.addEventListener("input", () => {
   refreshEditor(inputText.value);
 
@@ -743,7 +598,6 @@ controlsSaveButton.addEventListener("click", () => {
 
 /* Keeps the processed text and highlight layer aligned while the original text scrolls. */
 inputText.addEventListener("scroll", () => {
-  syncHighlightScroll();
 
   if (synchronisedScrollTargets.has(inputText)) {
     synchronisedScrollTargets.delete(inputText);
@@ -761,7 +615,6 @@ outputText.addEventListener("scroll", () => {
   }
 
   syncTextScroll(outputText, inputText);
-  syncHighlightScroll();
 });
 
 /* Downloads the processed text as a plain text file. */

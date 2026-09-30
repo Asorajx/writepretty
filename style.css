@@ -412,40 +412,30 @@ body {
 
 /* Text Editor Area */
 .editor-wrapper {
-  position: relative;
   width: 100%;
   height: 40vh;
   min-height: 320px;
 }
 
-#highlightLayer,
 #inputText {
-  position: absolute;
-  inset: 0;
-
   width: 100%;
   height: 100%;
+
   font-family: "Space Grotesk", sans-serif;
   font-size: 16px;
   line-height: 1.6;
-  font-weight: normal;
-  letter-spacing: normal;
+
+  padding: 0;
+
+  border: none;
+  outline: none;
+  resize: none;
+
+  background: transparent;
+  color: var(--text);
 
   white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-#highlightLayer {
-  pointer-events: none;
-  overflow: hidden;
-  color: white;
-}
-
-#inputText {
-  background: transparent;
-  color: transparent;
-  caret-color: white;
-  resize: none;
+  overflow-wrap: break-word;
 }
 
 #inputText::placeholder,
@@ -457,22 +447,24 @@ body {
 }
 
 textarea {
-  width: 100%;
-  height: 40vh;
-  min-height: 320px;
-  border: none;
-  resize: none;
-  outline: none;
-  background: transparent;
-  color: #e5e7eb;
-  font-size: 16px;
-  line-height: 1.6;
+  font-family: "Space Grotesk", sans-serif;
 }
 
 #outputText {
+  width: 100%;
+  height: 40vh;
+  min-height: 320px;
+
   font-family: "Space Grotesk", sans-serif;
   font-size: 16px;
   line-height: 1.6;
+
+  border: none;
+  outline: none;
+  resize: none;
+
+  background: transparent;
+  color: var(--text);
 }
 
 
@@ -714,31 +706,6 @@ textarea {
   transform: translateY(1px);
 }
 
-
-/* =========================
-   Spelling Detection
-   ========================= */
-
-.misspelled {
-  text-decoration-line: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: #ff6b8a;
-  text-decoration-thickness: 1.5px;
-}
-
-.capitalisation-issue {
-  text-decoration-line: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: #facc15;
-  text-decoration-thickness: 1.5px;
-}
-
-.formatting-issue {
-  text-decoration-line: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: #7dd3fc;
-  text-decoration-thickness: 1.5px;
-}
 
 /* =========================
     Extras

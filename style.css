@@ -698,6 +698,7 @@ textarea {
 #downloadButton {
   background: rgba(125, 211, 252, 0.18);
   color: var(--accent);
+
   box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
 }
 
@@ -705,16 +706,10 @@ textarea {
 #historyToggleButton {
   background: rgba(100, 116, 139, 0.1);
   color: var(--muted);
-  border-color: rgba(100, 116, 139, 0.25);
-  box-shadow: none;
-}
 
-/* History Mode uses the accent styling while turned on. */
-#historyToggleButton.active {
-  background: rgba(125, 211, 252, 0.18);
-  color: var(--accent);
-  border-color: rgba(125, 211, 252, 0.45);
-  box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
+  border-color: rgba(100, 116, 139, 0.25);
+
+  box-shadow: none;
 }
 
 /* Controls, Help, and Save use the muted toolbar styling. */
@@ -723,15 +718,30 @@ textarea {
 #controlsSaveButton {
   background: rgba(100, 116, 139, 0.1);
   color: var(--muted);
+
   border-color: rgba(100, 116, 139, 0.25);
+
   box-shadow: none;
 }
 
-/* Controls uses the accent styling while the controls menu is open. */
-#controlsButton.active {
+/* History Mode uses the accent styling while turned on. */
+#historyToggleButton.active {
   background: rgba(125, 211, 252, 0.18);
   color: var(--accent);
+
   border-color: rgba(125, 211, 252, 0.45);
+
+  box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
+}
+
+/* Controls and Help use the accent styling while their panels are open. */
+#controlsButton.active,
+#helpButton.active {
+  background: rgba(125, 211, 252, 0.18);
+  color: var(--accent);
+
+  border-color: rgba(125, 211, 252, 0.45);
+
   box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
 }
 
@@ -742,42 +752,49 @@ textarea {
   transform: none;
 }
 
-/* Highlights secondary toolbar buttons when hovered. */
-#controlsButton:hover,
-#helpButton:hover,
+/* Highlights secondary toolbar buttons while inactive. */
+#controlsButton:not(.active):hover,
+#helpButton:not(.active):hover,
 #controlsSaveButton:hover {
   background: rgba(100, 116, 139, 0.18);
   color: var(--text);
+
   transform: translateY(-1px);
 }
 
-/* Keeps Controls highlighted while hovering in active mode. */
-#controlsButton.active:hover {
-  background: rgba(125, 211, 252, 0.28);
-  color: var(--accent);
-}
-
-#copyButton:hover,
-#downloadButton:not(:disabled):hover,
-#historyToggleButton.active:hover {
-  background: rgba(125, 211, 252, 0.28);
-  transform: translateY(-1px);
-}
-
+/* Highlights History while it is turned off. */
 #historyToggleButton:not(.active):hover {
   background: rgba(100, 116, 139, 0.18);
   color: var(--text);
+
   transform: translateY(-1px);
 }
 
-/* Controls uses the accent styling while the controls menu is open. */
-#controlsButton.active {
-  background: rgba(125, 211, 252, 0.18);
-  color: var(--accent);
-  border-color: rgba(125, 211, 252, 0.45);
-  box-shadow: 0 3px 8px rgba(125, 211, 252, 0.08);
+/* Highlights the standard accent buttons on hover. */
+#copyButton:hover,
+#downloadButton:not(:disabled):hover {
+  background: rgba(125, 211, 252, 0.28);
+
+  transform: translateY(-1px);
 }
 
+/* Keeps Controls and Help highlighted while their panels are open. */
+#controlsButton.active:hover,
+#helpButton.active:hover {
+  background: rgba(125, 211, 252, 0.28);
+  color: var(--accent);
+
+  transform: translateY(-1px);
+}
+
+/* Keeps History highlighted while History Mode is turned on. */
+#historyToggleButton.active:hover {
+  background: rgba(125, 211, 252, 0.28);
+
+  transform: translateY(-1px);
+}
+
+/* Gives buttons a small pressed movement when clicked. */
 #copyButton:active,
 #downloadButton:not(:disabled):active,
 #historyToggleButton:active,

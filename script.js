@@ -371,6 +371,55 @@ function updateDownloadButton() {
     outputText.value.trim() === "";
 }
 
+/* Gives mouse-wheel scrolling a smooth gliding effect. */
+function enableSmoothWheelScroll(element) {
+  let targetScrollTop = element.scrollTop;
+  let animationFrame = null;
+
+  element.addEventListener(
+    "wheel",
+    event => {
+      /* Keep Ctrl + wheel available for normal browser zooming. */
+      if (event.ctrlKey) {
+        return;
+      }
+
+      event.preventDefault();
+
+      targetScrollTop += event.deltaY * 0.7; /* Controls how far each wheel movement travels. */
+
+      const maxScroll =
+        element.scrollHeight - element.clientHeight;
+
+      targetScrollTop = Math.max(
+        0,
+        Math.min(targetScrollTop, maxScroll)
+      );
+
+      if (animationFrame === null) {
+        animateScroll();
+      }
+    },
+    { passive: false }
+  );
+
+  function animateScroll() {
+    const distance =
+      targetScrollTop - element.scrollTop;
+
+    element.scrollTop += distance * 0.10; /* Controls how quickly it catches up. Higher = faster. */
+
+    if (Math.abs(distance) < 0.5) {
+      element.scrollTop = targetScrollTop;
+      animationFrame = null;
+      return;
+    }
+
+    animationFrame =
+      requestAnimationFrame(animateScroll);
+  }
+}
+
 /* Returns the current scroll position as a proportion of the available scroll area. */
 function getScrollRatio(element) {
   const maxScroll =
@@ -716,6 +765,10 @@ function leaveCombinedHistory() {
 /* =========================
    Event Listeners
    ========================= */
+
+/* Enables smooth mouse-wheel scrolling for both text areas. */
+enableSmoothWheelScroll(inputText);
+enableSmoothWheelScroll(outputText);
 
 setupCleanupControls();
 

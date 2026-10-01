@@ -584,6 +584,87 @@ textarea {
 
 
 /* =========================
+   Help Panel
+   ========================= */
+
+#helpView {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  padding: 20px;
+}
+
+.help-section h4 {
+  margin: 0 0 6px;
+
+  color: var(--accent);
+}
+
+.help-section p {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Visually demonstrates a browser-style spelling underline. */
+.spelling-example {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: #ef4444;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+/* Matches the small buttons used by History Mode. */
+.help-history-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 22px;
+  height: 22px;
+
+  background: rgba(55, 65, 81, 0.7);
+  color: var(--accent);
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+
+  vertical-align: middle;
+}
+
+/* Makes links to existing app controls look interactive without resembling a full button. */
+.help-inline-button {
+  padding: 0;
+
+  background: none;
+  color: #cbd5e1;
+
+  border: none;
+
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+
+  cursor: pointer;
+}
+
+.help-inline-button:hover,
+.help-inline-button:focus-visible {
+  color: var(--accent);
+}
+
+
+/* =========================
    Buttons
    ========================= */
 

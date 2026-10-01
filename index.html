@@ -69,9 +69,7 @@
         <div class="text-panel original-panel">
           <div class="monitor-screen">
 
-            <div class="panel-header">
-              <h2>Original</h2>
-            </div>
+          <h2 id="originalPanelTitle">Original</h2>
 
             <div id="editorView">
               <div class="editor-wrapper">
@@ -169,6 +167,64 @@
               >
                 Save
               </button>
+
+            </div>
+
+            <div id="helpView" class="hidden">
+
+              <div class="help-section">
+                <h4>Automatic cleanup</h4>
+                  <p>
+                    WritePretty uses simple rules to clean spacing, punctuation,
+                    and capitalisation. Individual cleanup rules can be changed
+                    using
+                    <button
+                      id="helpControlsLink"
+                      class="help-inline-button"
+                      type="button"
+                    >
+                      Controls
+                    </button>.
+                  </p>
+              </div>
+
+              <div class="help-section">
+                <h4>Spelling</h4>
+                <p>
+                  Spelling is checked by your browser. Misspelled words may appear
+                  with a <span class="spelling-example">red underline</span>,
+                  depending on your browser settings. WritePretty does not
+                  automatically replace spelling mistakes.
+                </p>
+              </div>
+
+              <div class="help-section">
+                <h4>Markdown</h4>
+                <p>
+                  Markdown formatting can be preserved or removed using Controls,
+                  including headings, bullets, numbered lists, quotes, and emphasis.
+                </p>
+              </div>
+
+              <div class="help-section">
+                <h4>Protected content</h4>
+                <p>
+                  Code, URLs, and email addresses are protected where possible so
+                  cleanup rules do not accidentally change their contents.
+                </p>
+              </div>
+
+              <div class="help-section">
+                <h4>History</h4>
+                <p>
+                  History Mode keeps up to five separate text entries. Use the
+                  numbered tabs to switch between entries,
+                  <span class="help-history-button">+</span>
+                  to create a new entry, and
+                  <span class="help-history-button">⊕</span>
+                  to view all entries together.
+                </p>
+              </div>
 
             </div>
 

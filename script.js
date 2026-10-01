@@ -4,10 +4,16 @@
 
 /* Input Screen */
 const inputText = document.getElementById("inputText");
+const originalPanelTitle = document.getElementById("originalPanelTitle");
+const editorView = document.getElementById("editorView");
+
 const controlsButton = document.getElementById("controlsButton");
 const controlsView = document.getElementById("controlsView");
 const controlsSaveButton = document.getElementById("controlsSaveButton");
-const editorView = document.getElementById("editorView");
+
+const helpButton = document.getElementById("helpButton");
+const helpView = document.getElementById("helpView");
+const helpControlsLink = document.getElementById("helpControlsLink");
 
 const extraSpacesControl = document.getElementById("extraSpacesControl");
 const punctuationControl = document.getElementById("punctuationControl");
@@ -784,15 +790,62 @@ inputText.addEventListener("input", () => {
 /* Opens the Controls panel without changing the current text. */
 controlsButton.addEventListener("click", () => {
   editorView.classList.add("hidden");
+  helpView.classList.add("hidden");
   controlsView.classList.remove("hidden");
+
   controlsButton.classList.add("active");
+  helpButton.classList.remove("active");
+
+  originalPanelTitle.textContent = "Controls";
 });
 
 /* Saves the current control choices by closing the Controls panel. */
 controlsSaveButton.addEventListener("click", () => {
   controlsView.classList.add("hidden");
   editorView.classList.remove("hidden");
+
   controlsButton.classList.remove("active");
+
+  originalPanelTitle.textContent = "Original";
+});
+
+/* Opens and closes the Help view. */
+helpButton.addEventListener("click", () => {
+  const helpIsOpen =
+    !helpView.classList.contains("hidden");
+
+  /* Return to the editor when Help is clicked again. */
+  if (helpIsOpen) {
+    helpView.classList.add("hidden");
+    editorView.classList.remove("hidden");
+
+    helpButton.classList.remove("active");
+    originalPanelTitle.textContent = "Original";
+
+    return;
+  }
+
+  /* Hide the other views before opening Help. */
+  editorView.classList.add("hidden");
+  controlsView.classList.add("hidden");
+  helpView.classList.remove("hidden");
+
+  controlsButton.classList.remove("active");
+  helpButton.classList.add("active");
+
+  originalPanelTitle.textContent = "Help";
+});
+
+/* Opens Controls directly from the Help description. */
+helpControlsLink.addEventListener("click", () => {
+  helpView.classList.add("hidden");
+  editorView.classList.add("hidden");
+  controlsView.classList.remove("hidden");
+
+  helpButton.classList.remove("active");
+  controlsButton.classList.add("active");
+
+  originalPanelTitle.textContent = "Controls";
 });
 
 /* Keeps the processed text aligned while the original text scrolls. */

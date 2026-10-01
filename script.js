@@ -72,6 +72,9 @@ const synchronisedScrollTargets = new WeakSet();
 /* Maximum number of history tabs allowed. */
 const MAX_HISTORY_ENTRIES = 5;
 
+/* Key used to save the current workspace in the browser. */
+const AUTOSAVE_KEY = "writepretty-autosave";
+
 
 /* =========================
    Main Text Processor
@@ -484,6 +487,8 @@ function toggleCleanupOption(option, element) {
   );
 
   refreshEditor(inputText.value);
+
+  saveWorkspace();
 }
 
 /* Makes the existing checkbox-style controls clickable and keyboard accessible. */
@@ -635,6 +640,7 @@ function switchHistoryEntry(id) {
 
   displayText(entry.text);
   renderHistoryTabs();
+  saveWorkspace();
 }
 
 /* Creates and opens a new history entry. */
@@ -663,6 +669,7 @@ function createHistoryEntry(text = "") {
 
   displayText(text);
   renderHistoryTabs();
+  saveWorkspace();
 }
 
 /* Removes one history entry and updates the current history view. */
@@ -706,6 +713,8 @@ function deleteHistoryEntry(id) {
       setCombinedView(false);
       displayText(historyEntries[0].text);
       renderHistoryTabs();
+
+      saveWorkspace();
       return;
     }
 
@@ -715,6 +724,7 @@ function deleteHistoryEntry(id) {
 
     displayText(combinedText);
     renderHistoryTabs();
+    saveWorkspace();
     return;
   }
 
@@ -732,6 +742,7 @@ function deleteHistoryEntry(id) {
   }
 
   renderHistoryTabs();
+  saveWorkspace();
 }
 
 /* Combine all history entries together without creating a new entry. */
@@ -771,12 +782,158 @@ function leaveCombinedHistory() {
 
 
 /* =========================
+   Local Autosave
+   ========================= */
+
+/* Saves the current workspace to the browser. */
+function saveWorkspace() {
+  const workspace = {
+    currentText: inputText.value,
+    historyModeEnabled,
+    historyEntries,
+    activeHistoryId,
+    cleanupOptions
+  };
+
+  try {
+    localStorage.setItem(
+      AUTOSAVE_KEY,
+      JSON.stringify(workspace)
+    );
+  } catch (error) {
+    console.warn("WritePretty could not save the workspace.", error);
+  }
+}
+
+/* Restores the previously saved workspace when WritePretty opens. */
+function loadWorkspace() {
+  let savedWorkspace;
+
+  try {
+    const savedData =
+      localStorage.getItem(AUTOSAVE_KEY);
+
+    if (!savedData) {
+      refreshEditor(inputText.value);
+      renderHistoryTabs();
+      return;
+    }
+
+    savedWorkspace = JSON.parse(savedData);
+  } catch (error) {
+    console.warn("WritePretty could not restore the workspace.", error);
+
+    refreshEditor(inputText.value);
+    renderHistoryTabs();
+    return;
+  }
+
+  /* Restore cleanup settings that still exist in the current version. */
+  if (
+    savedWorkspace.cleanupOptions &&
+    typeof savedWorkspace.cleanupOptions === "object"
+  ) {
+    Object.keys(cleanupOptions).forEach(option => {
+      if (
+        typeof savedWorkspace.cleanupOptions[option] === "boolean"
+      ) {
+        cleanupOptions[option] =
+          savedWorkspace.cleanupOptions[option];
+      }
+    });
+  }
+
+  /* Restore saved History Mode entries. */
+  if (Array.isArray(savedWorkspace.historyEntries)) {
+    const validEntries =
+      savedWorkspace.historyEntries
+        .filter(entry =>
+          Number.isInteger(entry.id) &&
+          typeof entry.text === "string"
+        )
+        .slice(0, MAX_HISTORY_ENTRIES);
+
+    historyEntries.push(...validEntries);
+  }
+
+  /* Restore the next available history ID. */
+  if (historyEntries.length > 0) {
+    nextHistoryId =
+      Math.max(
+        ...historyEntries.map(entry => entry.id)
+      ) + 1;
+  }
+
+  historyModeEnabled =
+    savedWorkspace.historyModeEnabled === true;
+
+  /* Restore the previously active history entry where possible. */
+  const savedActiveEntry =
+    historyEntries.find(
+      entry =>
+        entry.id === savedWorkspace.activeHistoryId
+    );
+
+  if (savedActiveEntry) {
+    activeHistoryId = savedActiveEntry.id;
+  } else if (historyEntries.length > 0) {
+    activeHistoryId = historyEntries[0].id;
+  }
+
+  /* Combined View is temporary, return to a normal editor view. */
+  combinedViewActive = false;
+  inputText.readOnly = false;
+
+  originalPanel.classList.remove(
+    "combined-preview"
+  );
+
+  /* Restore the History button and rail. */
+  historyToggleButton.classList.toggle(
+    "active",
+    historyModeEnabled
+  );
+
+  historyToggleButton.setAttribute(
+    "aria-pressed",
+    historyModeEnabled
+  );
+
+  historyTabs.classList.toggle(
+    "hidden",
+    !historyModeEnabled
+  );
+
+  /* Restore the correct text in the editor. */
+  if (historyModeEnabled && savedActiveEntry) {
+    displayText(savedActiveEntry.text);
+  } else if (
+    historyModeEnabled &&
+    historyEntries.length > 0
+  ) {
+    displayText(historyEntries[0].text);
+  } else {
+    displayText(
+      typeof savedWorkspace.currentText === "string"
+        ? savedWorkspace.currentText
+        : ""
+    );
+  }
+
+  renderHistoryTabs();
+}
+
+
+/* =========================
    Event Listeners
    ========================= */
 
 /* Enables smooth mouse-wheel scrolling for both text areas. */
 enableSmoothWheelScroll(inputText);
 enableSmoothWheelScroll(outputText);
+
+/* Restore saved text, history, and cleanup settings. */
+loadWorkspace();
 
 setupCleanupControls();
 
@@ -787,6 +944,8 @@ inputText.addEventListener("input", () => {
   if (historyModeEnabled) {
     saveActiveHistoryEntry();
   }
+
+  saveWorkspace();
 });
 
 /* Opens the Controls panel without changing the current text. */
@@ -938,6 +1097,7 @@ historyToggleButton.addEventListener("click", () => {
     }
 
     renderHistoryTabs();
+    saveWorkspace();
     return;
   }
 
@@ -954,6 +1114,7 @@ historyToggleButton.addEventListener("click", () => {
   }
 
   renderHistoryTabs();
+  saveWorkspace();
 });
 
 /* Creates a blank history entry when the plus button is clicked. */

@@ -868,9 +868,100 @@ footer {
   color: var(--muted);
 }
 
-/* Responsive */
+
+/* =========================
+    Mobile Compatability
+   ========================= */
+
 @media(max-width:760px) {
   .editor-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: calc(100% - 36px);
+  }
+
+  .hero {
+    padding-top: 42px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .editor-section {
+    padding: 82px 0 90px;
+  }
+
+  .editor-layout {
+    gap: 72px;
+  }
+
+  /* Reserves space on the right for the History rail. */
+  .original-editor-shell,
+  .processed-history-shell {
+    width: calc(100% - 24px);
+    margin-left: 0;
+    margin-right: 24px;
+  }
+
+  .original-toolbar,
+  .pretty-toolbar {
+    position: absolute;
+    top: -72px;
+    left: 6px;
+
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 7px;
+
+    width: calc(100% - 12px);
+    min-height: 70px;
+    padding: 8px 10px;
+  }
+
+  .panel-actions {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .text-stats {
+    font-size: 13px;
+  }
+
+  .monitor-screen {
+    min-height: 310px;
+    padding: 14px;
+  }
+
+  .editor-wrapper,
+  #outputText {
+    height: 30vh;
+    min-height: 230px;
+  }
+
+  #inputText,
+  #outputText {
+    font-size: 15px;
+  }
+
+  .history-tabs {
+    right: -24px;
+    width: 34px;
+    padding-inline: 3px;
+  }
+
+  .history-tab,
+  .history-tab-item {
+    width: 26px;
+    height: 26px;
+  }
+
+  footer {
+    padding: 30px 24px;
   }
 }

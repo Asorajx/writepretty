@@ -727,7 +727,8 @@ textarea {
 #historyToggleButton,
 #controlsButton,
 #helpButton,
-#controlsCloseButton {
+#controlsCloseButton,
+#resetButton {
   padding: 5px 14px;
 
   font-size: 13px;
@@ -744,6 +745,25 @@ textarea {
     border-color 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.2s ease;
+}
+
+/* Reset uses a muted destructive style. */
+#resetButton {
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5;
+
+  border-color: rgba(248, 113, 113, 0.28);
+
+  box-shadow: none;
+}
+
+#resetButton:hover {
+  background: rgba(248, 113, 113, 0.16);
+  color: #fecaca;
+
+  border-color: rgba(248, 113, 113, 0.45);
+
+  transform: translateY(-1px);
 }
 
 /* Copy and Download use the normal accent styling. */
@@ -853,7 +873,122 @@ textarea {
 #historyToggleButton:active,
 #controlsButton:active,
 #helpButton:active,
-#controlsCloseButton:active {
+#controlsCloseButton:active,
+#resetButton:active {
+  transform: translateY(1px);
+}
+
+/* =========================
+   Reset Confirmation Modal
+   ========================= */
+
+/* Covers the page and places the confirmation card in the centre. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: rgba(15, 23, 42, 0.72);
+}
+
+/* Main confirmation box. */
+.modal-card {
+  width: min(100%, 360px);
+  padding: 24px;
+
+  background: #1e293b;
+
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  border-radius: 12px;
+
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+}
+
+/* Modal heading. */
+.modal-card h3 {
+  margin: 0 0 10px;
+
+  color: var(--text);
+  font-size: 18px;
+}
+
+/* Modal explanation text. */
+.modal-card p {
+  margin: 0;
+
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Places the confirmation buttons at the bottom-right. */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 22px;
+}
+
+/* Shared modal button styling. */
+#resetCancelButton,
+#resetConfirmButton {
+  padding: 6px 15px;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Cancel uses the normal muted styling. */
+#resetCancelButton {
+  background: rgba(100, 116, 139, 0.1);
+  color: var(--muted);
+
+  border: 1px solid rgba(100, 116, 139, 0.25);
+}
+
+#resetCancelButton:hover {
+  background: rgba(100, 116, 139, 0.18);
+  color: var(--text);
+
+  transform: translateY(-1px);
+}
+
+/* Confirm Reset uses the destructive styling. */
+#resetConfirmButton {
+  background: rgba(248, 113, 113, 0.1);
+  color: #fca5a5;
+
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+#resetConfirmButton:hover {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+
+  border-color: rgba(248, 113, 113, 0.5);
+
+  transform: translateY(-1px);
+}
+
+#resetCancelButton:active,
+#resetConfirmButton:active {
   transform: translateY(1px);
 }
 

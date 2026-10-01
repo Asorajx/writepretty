@@ -7,6 +7,11 @@ const inputText = document.getElementById("inputText");
 const originalPanelTitle = document.getElementById("originalPanelTitle");
 const editorView = document.getElementById("editorView");
 
+const resetButton = document.getElementById("resetButton");
+const resetModal = document.getElementById("resetModal");
+const resetCancelButton = document.getElementById("resetCancelButton");
+const resetConfirmButton = document.getElementById("resetConfirmButton");
+
 const controlsButton = document.getElementById("controlsButton");
 const controlsView = document.getElementById("controlsView");
 const controlsCloseButton = document.getElementById("controlsCloseButton");
@@ -53,8 +58,8 @@ let activeHistoryId = null;
 let nextHistoryId = 1;
 let combinedViewActive = false;
 
-/* Clean up based on options selected. */
-const cleanupOptions = {
+/* Default cleanup settings used when WritePretty starts or is reset. */
+const DEFAULT_CLEANUP_OPTIONS = {
   spaces: true,
   punctuation: true,
   capitalisation: true,
@@ -64,6 +69,11 @@ const cleanupOptions = {
   markdownNumberedLists: false,
   markdownQuotes: false,
   markdownEmphasis: false
+};
+
+/* Clean up based on options selected. */
+const cleanupOptions = {
+  ...DEFAULT_CLEANUP_OPTIONS
 };
 
 /* Tracks text areas moved automatically so their scroll events are not synced back. */
@@ -923,6 +933,68 @@ function loadWorkspace() {
   renderHistoryTabs();
 }
 
+/* Opens the Reset confirmation modal. */
+function openResetModal() {
+  resetModal.classList.remove("hidden");
+  resetCancelButton.focus();
+}
+
+/* Closes the Reset confirmation modal. */
+function closeResetModal() {
+  resetModal.classList.add("hidden");
+  resetButton.focus();
+}
+
+/* Clears the saved workspace and restores WritePretty to its defaults. */
+function resetWorkspace() {
+  /* Clear all History Mode data. */
+  historyEntries.length = 0;
+  historyModeEnabled = false;
+  activeHistoryId = null;
+  nextHistoryId = 1;
+  combinedViewActive = false;
+
+  /* Restore the default cleanup settings. */
+  Object.assign(
+    cleanupOptions,
+    DEFAULT_CLEANUP_OPTIONS
+  );
+
+  /* Update the visible Controls to match the defaults. */
+  cleanupControls.forEach(({ element, option }) => {
+    updateCleanupControl(
+      element,
+      cleanupOptions[option]
+    );
+  });
+
+  /* Return History Mode to its default state. */
+  inputText.readOnly = false;
+
+  originalPanel.classList.remove(
+    "combined-preview"
+  );
+
+  historyToggleButton.classList.remove(
+    "active"
+  );
+
+  historyToggleButton.setAttribute(
+    "aria-pressed",
+    "false"
+  );
+
+  historyTabs.classList.add("hidden");
+
+  renderHistoryTabs();
+
+  /* Clear the Original and Pretty text. */
+  displayText("");
+
+  /* Remove the saved workspace from local storage. */
+  localStorage.removeItem(AUTOSAVE_KEY);
+}
+
 
 /* =========================
    Event Listeners
@@ -936,6 +1008,32 @@ enableSmoothWheelScroll(outputText);
 loadWorkspace();
 
 setupCleanupControls();
+
+/* Opens the Reset confirmation modal. */
+resetButton.addEventListener("click", () => {
+  openResetModal();
+});
+
+/* Closes the Reset confirmation without changing anything. */
+resetCancelButton.addEventListener("click", () => {
+  closeResetModal();
+});
+
+/* Confirms the reset and clears the saved workspace. */
+resetConfirmButton.addEventListener("click", () => {
+  resetWorkspace();
+  closeResetModal();
+});
+
+/* Allows the Reset confirmation to be closed with Escape. */
+document.addEventListener("keydown", event => {
+  if (
+    event.key === "Escape" &&
+    !resetModal.classList.contains("hidden")
+  ) {
+    closeResetModal();
+  }
+});
 
 /* Processes the text as the user types. */
 inputText.addEventListener("input", () => {

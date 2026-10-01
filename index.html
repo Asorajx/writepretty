@@ -50,6 +50,14 @@
 
           <div class="panel-actions">
             <button
+              id="resetButton"
+              type="button"
+              data-tooltip="Clear all text, history, and cleanup settings"
+            >
+              Reset
+            </button>
+
+            <button
               id="controlsButton"
               type="button"
               data-tooltip="Choose which cleanup rules WritePretty applies"
@@ -346,6 +354,48 @@
       Local processing · No AI rewriting · Your words stay yours
     </p>
   </footer>
+
+
+<!-- =========================
+     Reset Confirmation Modal
+     ========================= -->
+
+<div
+  id="resetModal"
+  class="modal-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="resetModalTitle"
+  aria-describedby="resetModalDescription"
+>
+  <div class="modal-card">
+
+    <h3 id="resetModalTitle">
+      Reset WritePretty?
+    </h3>
+
+    <p id="resetModalDescription">
+      This will clear all text, history, and cleanup settings.
+    </p>
+
+    <div class="modal-actions">
+      <button
+        id="resetCancelButton"
+        type="button"
+      >
+        Cancel
+      </button>
+
+      <button
+        id="resetConfirmButton"
+        type="button"
+      >
+        Reset
+      </button>
+    </div>
+
+  </div>
+</div>
 
 
   <!-- =========================

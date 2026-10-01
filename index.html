@@ -52,6 +52,7 @@
             <button
               id="controlsButton"
               type="button"
+              data-tooltip="Choose which cleanup rules WritePretty applies"
             >
               Controls
             </button>
@@ -59,6 +60,7 @@
             <button
               id="helpButton"
               type="button"
+              data-tooltip="Learn how WritePretty's features work"
             >
               Help
             </button>
@@ -88,6 +90,7 @@
                 <label
                   id="extraSpacesControl"
                   class="control-option active"
+                  data-tooltip="Remove repeated spaces inside lines"
                 >
                   <span class="control-box"></span>
                   <span>Spaces</span>
@@ -96,6 +99,7 @@
                 <label
                   id="punctuationControl"
                   class="control-option active"
+                  data-tooltip="Fix clear spacing around punctuation"
                 >
                   <span class="control-box"></span>
                   <span>Punctuation</span>
@@ -104,6 +108,7 @@
                 <label
                   id="capitalisationControl"
                   class="control-option active"
+                  data-tooltip="Correct clear capitalisation issues"
                 >
                   <span class="control-box"></span>
                   <span>Capitalisation</span>
@@ -112,6 +117,7 @@
                 <label
                   id="extraLineBreaksControl"
                   class="control-option"
+                  data-tooltip="Remove empty lines while keeping normal line breaks"
                 >
                   <span class="control-box"></span>
                   <span>Extra line breaks</span>
@@ -123,6 +129,7 @@
                 <label
                   id="headingControl"
                   class="control-option"
+                  data-tooltip="Remove Markdown heading markers such as # and ##"
                 >
                   <span class="control-box"></span>
                   <span>Headings (#)</span>
@@ -131,6 +138,7 @@
                 <label
                   id="bulletControl"
                   class="control-option"
+                  data-tooltip="Remove Markdown bullet markers while keeping the item text"
                 >
                   <span class="control-box"></span>
                   <span>Bullets (-)</span>
@@ -139,6 +147,7 @@
                 <label
                   id="numberedListControl"
                   class="control-option"
+                  data-tooltip="Remove numbered-list markers such as 1. and 2."
                 >
                   <span class="control-box"></span>
                   <span>Numbered lists (1.)</span>
@@ -147,6 +156,7 @@
                 <label
                   id="quoteControl"
                   class="control-option"
+                  data-tooltip="Remove Markdown quote markers such as > and >>"
                 >
                   <span class="control-box"></span>
                   <span>Quotes (&gt;)</span>
@@ -155,6 +165,7 @@
                 <label
                   id="emphasisControl"
                   class="control-option"
+                  data-tooltip="Remove Markdown emphasis markers such as * and **"
                 >
                   <span class="control-box"></span>
                   <span>Emphasis (*)</span>
@@ -162,10 +173,11 @@
               </div>
 
               <button
-                id="controlsSaveButton"
+                id="controlsCloseButton"
                 type="button"
+                data-tooltip="Return to the Original editor"
               >
-                Save
+                Close
               </button>
 
             </div>
@@ -250,15 +262,25 @@
               id="historyToggleButton"
               type="button"
               aria-pressed="false"
+              data-tooltip="Keep and switch between multiple text entries"
             >
               History
             </button>
 
-            <button id="downloadButton" type="button" disabled>
+            <button
+              id="downloadButton"
+              type="button"
+              data-tooltip="Download the Pretty text as a .txt file"
+              disabled
+            >
               Download
             </button>
 
-            <button id="copyButton" type="button">
+            <button
+              id="copyButton"
+              type="button"
+              data-tooltip="Copy the Pretty text to your clipboard"
+            >
               Copy
             </button>
           </div>
@@ -292,6 +314,7 @@
             class="history-tab history-add-button"
             type="button"
             aria-label="Create new history entry"
+            data-tooltip="Create a new history entry"
           >
             +
           </button>
@@ -301,6 +324,7 @@
             class="history-tab history-combine-button"
             type="button"
             aria-label="Show combined history"
+            data-tooltip="View all history entries together"
           >
             ⊕
           </button>

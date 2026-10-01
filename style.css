@@ -120,6 +120,53 @@ body {
 
 
 /* =========================
+   Tooltips
+   ========================= */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 9px;
+
+  background: #223047;
+  color: var(--text);
+
+  border: 1px solid rgba(125, 211, 252, 0.5);
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+
+/* =========================
    Editor Toolbars
    ========================= */
 
@@ -229,6 +276,12 @@ body {
   box-shadow: 8px 6px 20px rgba(0, 0, 0, 0.28);
 
   transition: right 0.3s ease-out;
+}
+
+/* Brings History tooltips above the Pretty screen while the rail is being used. */
+.history-tabs:hover,
+.history-tabs:focus-within {
+  z-index: 3;
 }
 
 /* Slides the history rail underneath the processed text screen. */
@@ -674,7 +727,7 @@ textarea {
 #historyToggleButton,
 #controlsButton,
 #helpButton,
-#controlsSaveButton {
+#controlsCloseButton {
   padding: 5px 14px;
 
   font-size: 13px;
@@ -712,10 +765,10 @@ textarea {
   box-shadow: none;
 }
 
-/* Controls, Help, and Save use the muted toolbar styling. */
+/* Controls, Help, and Close use the muted toolbar styling. */
 #controlsButton,
 #helpButton,
-#controlsSaveButton {
+#controlsCloseButton {
   background: rgba(100, 116, 139, 0.1);
   color: var(--muted);
 
@@ -755,7 +808,7 @@ textarea {
 /* Highlights secondary toolbar buttons while inactive. */
 #controlsButton:not(.active):hover,
 #helpButton:not(.active):hover,
-#controlsSaveButton:hover {
+#controlsCloseButton:hover {
   background: rgba(100, 116, 139, 0.18);
   color: var(--text);
 
@@ -800,7 +853,7 @@ textarea {
 #historyToggleButton:active,
 #controlsButton:active,
 #helpButton:active,
-#controlsSaveButton:active {
+#controlsCloseButton:active {
   transform: translateY(1px);
 }
 

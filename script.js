@@ -9,7 +9,7 @@ const editorView = document.getElementById("editorView");
 
 const controlsButton = document.getElementById("controlsButton");
 const controlsView = document.getElementById("controlsView");
-const controlsSaveButton = document.getElementById("controlsSaveButton");
+const controlsCloseButton = document.getElementById("controlsCloseButton");
 
 const helpButton = document.getElementById("helpButton");
 const helpView = document.getElementById("helpView");
@@ -552,6 +552,7 @@ function renderHistoryTabs() {
     tab.classList.add("history-tab");
     tab.type = "button";
     tab.textContent = index + 1;
+    tab.dataset.tooltip = `Open history entry ${index + 1}`;
 
     tab.setAttribute(
       "aria-label",
@@ -571,6 +572,7 @@ function renderHistoryTabs() {
     deleteButton.classList.add("history-delete-button");
     deleteButton.type = "button";
     deleteButton.textContent = "×";
+    deleteButton.dataset.tooltip = `Delete history entry ${index + 1}`;
 
     deleteButton.setAttribute(
       "aria-label",
@@ -799,8 +801,8 @@ controlsButton.addEventListener("click", () => {
   originalPanelTitle.textContent = "Controls";
 });
 
-/* Saves the current control choices by closing the Controls panel. */
-controlsSaveButton.addEventListener("click", () => {
+/* Closes the Controls panel and returns to the editor. */
+controlsCloseButton.addEventListener("click", () => {
   controlsView.classList.add("hidden");
   editorView.classList.remove("hidden");
 

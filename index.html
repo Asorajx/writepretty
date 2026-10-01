@@ -12,18 +12,10 @@
 
 <body>
 
-  <!-- =========================
-       Ambient Background
-       ========================= -->
-
   <div class="ambient-background"></div>
 
-
-  <!-- =========================
-       Hero
-       ========================= -->
-
   <section class="hero">
+
     <div class="container">
       <h1>
         Keep your words. Make it pretty.
@@ -33,6 +25,7 @@
         A simple rule-based text cleanup tool that improves consistency and readability.
       </p>
     </div>
+
   </section>
 
 
@@ -48,6 +41,12 @@
 
         <!-- Toolbar for processing settings and user guidance -->
         <div class="original-toolbar">
+
+          <div class="text-stats">
+            <span id="originalWordCount">0 words</span>
+            <span class="stat-separator">·</span>
+            <span id="originalCharacterCount">0 characters</span>
+          </div>
 
           <div class="panel-actions">
             <button
@@ -95,6 +94,7 @@
                   <span class="control-box"></span>
                   <span>Spaces</span>
                 </label>
+
                 <label
                   id="punctuationControl"
                   class="control-option active"
@@ -102,12 +102,21 @@
                   <span class="control-box"></span>
                   <span>Punctuation</span>
                 </label>
+
                 <label
                   id="capitalisationControl"
                   class="control-option active"
                 >
                   <span class="control-box"></span>
                   <span>Capitalisation</span>
+                </label>
+
+                <label
+                  id="extraLineBreaksControl"
+                  class="control-option"
+                >
+                  <span class="control-box"></span>
+                  <span>Extra line breaks</span>
                 </label>
               </div>
 
@@ -120,6 +129,7 @@
                   <span class="control-box"></span>
                   <span>Headings (#)</span>
                 </label>
+
                 <label
                   id="bulletControl"
                   class="control-option"
@@ -127,6 +137,23 @@
                   <span class="control-box"></span>
                   <span>Bullets (-)</span>
                 </label>
+
+                <label
+                  id="numberedListControl"
+                  class="control-option"
+                >
+                  <span class="control-box"></span>
+                  <span>Numbered lists (1.)</span>
+                </label>
+
+                <label
+                  id="quoteControl"
+                  class="control-option"
+                >
+                  <span class="control-box"></span>
+                  <span>Quotes (&gt;)</span>
+                </label>
+
                 <label
                   id="emphasisControl"
                   class="control-option"

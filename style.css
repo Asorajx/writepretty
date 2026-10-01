@@ -173,7 +173,7 @@ body {
 
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
 
   width: calc(100% - 12px);
   min-height: 40px;

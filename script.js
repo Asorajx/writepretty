@@ -2,23 +2,39 @@
    DOM Elements
    ========================= */
 
+/* Input Screen */
 const inputText = document.getElementById("inputText");
+const controlsButton = document.getElementById("controlsButton");
+const controlsView = document.getElementById("controlsView");
+const controlsSaveButton = document.getElementById("controlsSaveButton");
+const editorView = document.getElementById("editorView");
+
+const extraSpacesControl = document.getElementById("extraSpacesControl");
+const punctuationControl = document.getElementById("punctuationControl");
+const capitalisationControl = document.getElementById("capitalisationControl");
+const extraLineBreaksControl = document.getElementById("extraLineBreaksControl");
+const headingControl = document.getElementById("headingControl");
+const bulletControl = document.getElementById("bulletControl");
+const numberedListControl = document.getElementById("numberedListControl");
+const quoteControl = document.getElementById("quoteControl");
+const emphasisControl = document.getElementById("emphasisControl");
+
+/* Output Screen */
 const outputText = document.getElementById("outputText");
 const copyButton = document.getElementById("copyButton");
 const downloadButton = document.getElementById("downloadButton");
 const historyToggleButton = document.getElementById("historyToggleButton");
+
 const historyTabs = document.querySelector(".history-tabs");
 const historyTabList = document.getElementById("historyTabList");
 const newHistoryButton = document.getElementById("newHistoryButton");
 const combineHistoryButton = document.getElementById("combineHistoryButton");
 const originalPanel = document.querySelector(".original-panel");
+
+const originalWordCount = document.getElementById("originalWordCount");
+const originalCharacterCount = document.getElementById("originalCharacterCount");
 const wordCount = document.getElementById("wordCount");
 const characterCount = document.getElementById("characterCount");
-const controlsButton = document.getElementById("controlsButton");
-const controlsView = document.getElementById("controlsView");
-const controlsSaveButton = document.getElementById("controlsSaveButton");
-const editorWrapper = document.querySelector(".editor-wrapper");
-const editorView = document.getElementById("editorView");
 
 
 /* =========================
@@ -31,56 +47,31 @@ let activeHistoryId = null;
 let nextHistoryId = 1;
 let combinedViewActive = false;
 
+/* Clean up based on options selected. */
+const cleanupOptions = {
+  spaces: true,
+  punctuation: true,
+  capitalisation: true,
+  extraLineBreaks: false,
+  markdownHeadings: false,
+  markdownBullets: false,
+  markdownNumberedLists: false,
+  markdownQuotes: false,
+  markdownEmphasis: false
+};
+
 /* Tracks text areas moved automatically so their scroll events are not synced back. */
 const synchronisedScrollTargets = new WeakSet();
 
-/* Max number of tabs allowed */
+/* Maximum number of history tabs allowed. */
 const MAX_HISTORY_ENTRIES = 5;
-
-
-/* =========================
-   Formatting Checks
-   ========================= */
-
-/* Finds punctuation that may be missing a space after it. */
-function detectFormattingIssues(text) {
-  const issues = [];
-  const matches = text.matchAll(/([.,;:!?])([A-Za-z]+)/g);
-
-  for (const match of matches) {
-    const punctuation = match[1];
-    const word = match[2];
-    const wordStart = match.index + punctuation.length;
-
-    /* Ignore obvious URLs and email addresses. */
-    const nearbyText = text.slice(
-      Math.max(0, match.index - 50),
-      match.index
-    );
-
-    if (
-      /https?:\/\/\S*$/i.test(nearbyText) ||
-      /www\.\S*$/i.test(nearbyText) ||
-      /@\S*$/i.test(nearbyText)
-    ) {
-      continue;
-    }
-
-    issues.push({
-      word,
-      index: wordStart
-    });
-  }
-
-  return issues;
-}
 
 
 /* =========================
    Main Text Processor
    ========================= */
 
-/* Protects Markdown code so cleanup rules do not change its contents. */
+/* Protects code, URLs, and email addresses so cleanup rules do not change them. */
 function protectMarkdownContent(text) {
   const protectedParts = [];
 
@@ -136,7 +127,7 @@ function protectMarkdownContent(text) {
   };
 }
 
-/* Restores protected Markdown content after text cleanup is complete. */
+/* Restores protected content after text cleanup is complete. */
 function restoreMarkdownContent(text, protectedParts) {
   let restoredText = text;
 
@@ -152,19 +143,51 @@ function restoreMarkdownContent(text, protectedParts) {
   return restoredText;
 }
 
-/* Runs each cleanup step while protecting Markdown code from changes. */
+/* Runs only the cleanup rules currently enabled in the Controls panel. */
 function cleanText(text) {
-  const markdown = protectMarkdownContent(text);
-  let cleanedText = markdown.text;
+  const protectedContent = protectMarkdownContent(text);
+  let cleanedText = protectedContent.text;
 
-  cleanedText = removeExtraWhitespace(cleanedText);
-  cleanedText = fixPunctuationSpacing(cleanedText);
-  cleanedText = trimWhitespace(cleanedText);
-  cleanedText = correctCapitalisation(cleanedText);
+  if (cleanupOptions.spaces) {
+    cleanedText = removeExtraWhitespace(cleanedText);
+    cleanedText = trimWhitespace(cleanedText);
+  }
+
+  if (cleanupOptions.punctuation) {
+    cleanedText = fixPunctuationSpacing(cleanedText);
+  }
+
+  if (cleanupOptions.capitalisation) {
+    cleanedText = correctCapitalisation(cleanedText);
+  }
+
+  if (cleanupOptions.extraLineBreaks) {
+    cleanedText = removeExtraLineBreaks(cleanedText);
+  }
+
+  if (cleanupOptions.markdownQuotes) {
+    cleanedText = removeMarkdownQuotes(cleanedText);
+  }
+
+  if (cleanupOptions.markdownHeadings) {
+    cleanedText = removeMarkdownHeadings(cleanedText);
+  }
+
+  if (cleanupOptions.markdownBullets) {
+    cleanedText = removeMarkdownBullets(cleanedText);
+  }
+
+  if (cleanupOptions.markdownNumberedLists) {
+    cleanedText = removeMarkdownNumberedLists(cleanedText);
+  }
+
+  if (cleanupOptions.markdownEmphasis) {
+    cleanedText = removeMarkdownEmphasis(cleanedText);
+  }
 
   return restoreMarkdownContent(
     cleanedText,
-    markdown.protectedParts
+    protectedContent.protectedParts
   );
 }
 
@@ -208,6 +231,14 @@ function trimWhitespace(text) {
   );
 }
 
+/* Removes empty lines while keeping normal single line breaks. */
+function removeExtraLineBreaks(text) {
+  return text.replace(
+    /\n(?:[ \t]*\n)+/g,
+    "\n"
+  );
+}
+
 /* Corrects capitalisation only when the intended change is clear. */
 function correctCapitalisation(text) {
   let correctedText = text;
@@ -235,26 +266,64 @@ function correctCapitalisation(text) {
   return correctedText;
 }
 
+/* Removes leading and optional closing markers from Markdown headings. */
+function removeMarkdownHeadings(text) {
+  return text.replace(
+    /^([ \t]*)#{1,6}[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/gm,
+    "$1$2"
+  );
+}
+
+/* Removes dash bullet markers while keeping the list text and indentation. */
+function removeMarkdownBullets(text) {
+  return text.replace(
+    /^([ \t]*)-[ \t]+/gm,
+    "$1"
+  );
+}
+
+/* Removes Markdown numbered-list markers while keeping the item text. */
+function removeMarkdownNumberedLists(text) {
+  return text.replace(
+    /^([ \t]*)\d+[.)][ \t]+/gm,
+    "$1"
+  );
+}
+
+/* Removes Markdown quote markers while keeping the quoted text. */
+function removeMarkdownQuotes(text) {
+  return text.replace(
+    /^([ \t]*)(?:>[ \t]*)+/gm,
+    "$1"
+  );
+}
+
+/* Removes asterisk emphasis markers without changing the text between them. */
+function removeMarkdownEmphasis(text) {
+  return text
+    .replace(/\*\*\*(\S(?:[^\n]*?\S)?)\*\*\*/g, "$1")
+    .replace(/\*\*(\S(?:[^\n]*?\S)?)\*\*/g, "$1")
+    .replace(/\*(\S(?:[^*\n]*?\S)?)\*/g, "$1");
+}
+
 
 /* =========================
    Editor Display Helpers
    ========================= */
 
-/* Updates the processed text word and character counts. */
-function updateTextStats(text) {
-  const trimmedText = text.trim();
+/* Updates the word and character counts for a text area. */
+function updateTextStats(text, wordElement, characterElement) {
+  const wordMatches = text.match(
+    /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g
+  );
 
-  const words =
-    trimmedText === ""
-      ? 0
-      : trimmedText.split(/\s+/).length;
-
+  const words = wordMatches ? wordMatches.length : 0;
   const characters = text.length;
 
-  wordCount.textContent =
+  wordElement.textContent =
     `${words} ${words === 1 ? "word" : "words"}`;
 
-  characterCount.textContent =
+  characterElement.textContent =
     `${characters} ${characters === 1 ? "character" : "characters"}`;
 }
 
@@ -262,11 +331,24 @@ function updateTextStats(text) {
 function refreshEditor(text) {
   outputText.value = cleanText(text);
 
-  updateTextStats(outputText.value);
+  /* Count the original text before cleanup. */
+  updateTextStats(
+    text,
+    originalWordCount,
+    originalCharacterCount
+  );
+
+  /* Count the processed Pretty text after cleanup. */
+  updateTextStats(
+    outputText.value,
+    wordCount,
+    characterCount
+  );
+
   updateDownloadButton();
 }
 
-/* Displays text in both editor panels and refreshes the highlight layer. */
+/* Displays text in both editor panels and refreshes the processed output. */
 function displayText(text) {
   inputText.value = text;
   refreshEditor(text);
@@ -312,6 +394,67 @@ function syncTextScroll(source, target) {
 
   target.scrollTop =
     ratio * targetMaxScroll;
+}
+
+
+/* =========================
+   Controls Panel
+   ========================= */
+
+const cleanupControls = [
+  { element: extraSpacesControl, option: "spaces" },
+  { element: punctuationControl, option: "punctuation" },
+  { element: capitalisationControl, option: "capitalisation" },
+  { element: extraLineBreaksControl, option: "extraLineBreaks" },
+  { element: headingControl, option: "markdownHeadings" },
+  { element: bulletControl, option: "markdownBullets" },
+  { element: numberedListControl, option: "markdownNumberedLists" },
+  { element: quoteControl, option: "markdownQuotes" },
+  { element: emphasisControl, option: "markdownEmphasis" }
+];
+
+/* Keeps the visual toggle and accessibility state in sync. */
+function updateCleanupControl(element, enabled) {
+  element.classList.toggle("active", enabled);
+  element.setAttribute("aria-checked", enabled);
+}
+
+/* Changes one cleanup rule and immediately refreshes the Pretty output. */
+function toggleCleanupOption(option, element) {
+  cleanupOptions[option] = !cleanupOptions[option];
+
+  updateCleanupControl(
+    element,
+    cleanupOptions[option]
+  );
+
+  refreshEditor(inputText.value);
+}
+
+/* Makes the existing checkbox-style controls clickable and keyboard accessible. */
+function setupCleanupControls() {
+  cleanupControls.forEach(({ element, option }) => {
+    element.setAttribute("role", "checkbox");
+    element.setAttribute("tabindex", "0");
+
+    updateCleanupControl(
+      element,
+      cleanupOptions[option]
+    );
+
+    element.addEventListener("click", () => {
+      toggleCleanupOption(option, element);
+    });
+
+    element.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      event.preventDefault();
+      toggleCleanupOption(option, element);
+    });
+  });
 }
 
 
@@ -574,6 +717,8 @@ function leaveCombinedHistory() {
    Event Listeners
    ========================= */
 
+setupCleanupControls();
+
 /* Processes the text as the user types. */
 inputText.addEventListener("input", () => {
   refreshEditor(inputText.value);
@@ -583,20 +728,21 @@ inputText.addEventListener("input", () => {
   }
 });
 
-/* Switch to Control menu */
+/* Opens the Controls panel without changing the current text. */
 controlsButton.addEventListener("click", () => {
   editorView.classList.add("hidden");
   controlsView.classList.remove("hidden");
   controlsButton.classList.add("active");
 });
 
+/* Saves the current control choices by closing the Controls panel. */
 controlsSaveButton.addEventListener("click", () => {
   controlsView.classList.add("hidden");
   editorView.classList.remove("hidden");
   controlsButton.classList.remove("active");
 });
 
-/* Keeps the processed text and highlight layer aligned while the original text scrolls. */
+/* Keeps the processed text aligned while the original text scrolls. */
 inputText.addEventListener("scroll", () => {
 
   if (synchronisedScrollTargets.has(inputText)) {
@@ -770,13 +916,8 @@ for (let i = 0; i < 70; i++) {
   drop.classList.add("rain-drop");
   drop.style.left = Math.random() * 100 + "%";
 
-  /* Shorter / longer droplets */
   drop.style.height = (12 + Math.random() * 20) + "px";
-
-  /* Slight variation in thickness */
   drop.style.width = (1 + Math.random() * 1.2) + "px";
-
-  /* Different visibility */
   drop.style.opacity = 0.3 + Math.random() * 0.5;
 
   drop.style.animationDuration =

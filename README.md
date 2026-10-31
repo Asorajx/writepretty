@@ -48,4 +48,4 @@ Users can control which cleanup rules are applied, compare the original and proc
 
 ## Documentation
 
-Full project report: `P02-write-pretty.pdf`
+Full project report: [P02-writepretty.pdf](P02-writepretty.pdf)

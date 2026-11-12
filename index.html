@@ -5,7 +5,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>WritePretty</title>
+  <title>WritePretty – Clean up text without rewriting it</title>
+
+  <meta name="description" content="A free text cleanup tool that fixes spacing, punctuation, capitalisation and Markdown clutter. No AI rewriting, and your text never leaves your browser.">
+  <meta name="theme-color" content="#111827">
+
+  <!-- Preview shown when the page is shared -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="WritePretty">
+  <meta property="og:description" content="Keep your words. Make it pretty. A simple rule-based text cleanup tool that runs in your browser.">
+  <meta name="twitter:card" content="summary">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
 
   <link rel="icon" type="image/png" sizes="32x32" href="images/writepretty-favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="images/writepretty-favicon-16.png">
@@ -84,12 +98,15 @@
         <div class="text-panel original-panel">
           <div class="monitor-screen">
 
-          <h2 id="originalPanelTitle">Original</h2>
+            <div class="panel-header">
+              <h2 id="originalPanelTitle">Original</h2>
+            </div>
 
             <div id="editorView">
               <div class="editor-wrapper">
                 <textarea
                   id="inputText"
+                  aria-label="Original text"
                   placeholder="Paste your text here..."
                   spellcheck="true"
                 ></textarea>
@@ -99,7 +116,7 @@
             <div id="helpView" class="hidden">
 
               <div class="help-section">
-                <h4>Cleanup rules</h4>
+                <h3>Cleanup rules</h3>
                 <p>
                   Text is cleaned as you type. Switch each rule on or off with
                   the icons beside the Original screen.
@@ -107,7 +124,7 @@
               </div>
 
               <div class="help-section">
-                <h4>Spelling</h4>
+                <h3>Spelling</h3>
                 <p>
                   Your browser marks possible mistakes with a
                   <span class="spelling-example">red underline</span>.
@@ -116,14 +133,14 @@
               </div>
 
               <div class="help-section">
-                <h4>Protected content</h4>
+                <h3>Protected content</h3>
                 <p>
                   Code, URLs, and email addresses are left unchanged.
                 </p>
               </div>
 
               <div class="help-section">
-                <h4>History</h4>
+                <h3>History</h3>
                 <p>
                   Keeps up to five entries. Use the numbered tabs to switch,
                   <span class="help-history-button">+</span>
@@ -290,6 +307,7 @@
               id="copyButton"
               type="button"
               data-tooltip="Copy the Pretty text to your clipboard"
+              disabled
             >
               Copy
             </button>
@@ -306,6 +324,7 @@
 
             <textarea
               id="outputText"
+              aria-label="Pretty text"
               placeholder="Your cleaned text will appear here..."
               readonly
             ></textarea>

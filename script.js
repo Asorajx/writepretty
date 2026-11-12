@@ -76,6 +76,11 @@ const cleanupOptions = {
 /* The text area the user is scrolling. Only its scroll events are synced to the other one. */
 let activeScrollSource = null;
 
+/* Tracks whether the user has asked their device to reduce motion. */
+const reducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+);
+
 /* Lets one text area stop the other's wheel glide when the user switches screens. */
 const smoothScrollCancellers = new Map();
 
@@ -239,7 +244,9 @@ function removeExtraWhitespace(text) {
 function fixPunctuationSpacing(text) {
   return text
     .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/([.,;:!?])(?=[A-Za-z])/g, "$1 ");
+    .replace(/([,;:!?])(?=[A-Za-z])/g, "$1 ")
+    /* A full stop only gets a space before a capital letter, so names like Fuse.js stay intact. */
+    .replace(/(?<=[a-z0-9)"'\]]|\.\.)\.(?=[A-Z])/g, ". ");
 }
 
 /* Removes outer blank lines without changing Markdown indentation. */
@@ -385,10 +392,13 @@ function setCombinedView(active) {
   );
 }
 
-/* Disables downloading when there is no processed text. */
+/* Disables downloading and copying when there is no processed text. */
 function updateDownloadButton() {
-  downloadButton.disabled =
+  const outputIsEmpty =
     outputText.value.trim() === "";
+
+  downloadButton.disabled = outputIsEmpty;
+  copyButton.disabled = outputIsEmpty;
 }
 
 /* Gives mouse-wheel scrolling a smooth gliding effect. */
@@ -413,15 +423,22 @@ function enableSmoothWheelScroll(element) {
   element.addEventListener(
     "wheel",
     event => {
+      /* This screen is now the one being scrolled. */
+      activeScrollSource = element;
+
       /* Keep Ctrl + wheel available for normal browser zooming. */
       if (event.ctrlKey) {
         return;
       }
 
+      /* Use the browser's normal scrolling when the user prefers reduced motion. */
+      if (reducedMotion.matches) {
+        return;
+      }
+
       event.preventDefault();
 
-      /* This screen is now the one being scrolled, so stop the other screen's glide. */
-      activeScrollSource = element;
+      /* Stop the other screen's glide. */
 
       smoothScrollCancellers.forEach((cancel, other) => {
         if (other !== element) {
@@ -1045,6 +1062,27 @@ resetConfirmButton.addEventListener("click", () => {
   closeResetModal();
 });
 
+/* Keeps keyboard focus inside the Reset confirmation while it is open. */
+resetModal.addEventListener("keydown", event => {
+  if (event.key !== "Tab") {
+    return;
+  }
+
+  if (
+    event.shiftKey &&
+    document.activeElement === resetCancelButton
+  ) {
+    event.preventDefault();
+    resetConfirmButton.focus();
+  } else if (
+    !event.shiftKey &&
+    document.activeElement === resetConfirmButton
+  ) {
+    event.preventDefault();
+    resetCancelButton.focus();
+  }
+});
+
 /* Allows the Reset confirmation to be closed with Escape. */
 document.addEventListener("keydown", event => {
   if (
@@ -1159,10 +1197,17 @@ downloadButton.addEventListener("click", () => {
 });
 
 /* Copies the processed text and briefly confirms that it was copied. */
-copyButton.addEventListener("click", () => {
-  navigator.clipboard.writeText(outputText.value);
+copyButton.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(outputText.value);
 
-  copyButton.textContent = "Copied!";
+    copyButton.textContent = "Copied!";
+  } catch (error) {
+    /* Select the text so it can still be copied with the keyboard. */
+    outputText.select();
+
+    copyButton.textContent = "Copy failed";
+  }
 
   setTimeout(() => {
     copyButton.textContent = "Copy";

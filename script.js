@@ -12,13 +12,10 @@ const resetModal = document.getElementById("resetModal");
 const resetCancelButton = document.getElementById("resetCancelButton");
 const resetConfirmButton = document.getElementById("resetConfirmButton");
 
-const controlsButton = document.getElementById("controlsButton");
-const controlsView = document.getElementById("controlsView");
-const controlsCloseButton = document.getElementById("controlsCloseButton");
+const clearButton = document.getElementById("clearButton");
 
 const helpButton = document.getElementById("helpButton");
 const helpView = document.getElementById("helpView");
-const helpControlsLink = document.getElementById("helpControlsLink");
 
 const extraSpacesControl = document.getElementById("extraSpacesControl");
 const punctuationControl = document.getElementById("punctuationControl");
@@ -76,8 +73,11 @@ const cleanupOptions = {
   ...DEFAULT_CLEANUP_OPTIONS
 };
 
-/* Tracks text areas moved automatically so their scroll events are not synced back. */
-const synchronisedScrollTargets = new WeakSet();
+/* The text area the user is scrolling. Only its scroll events are synced to the other one. */
+let activeScrollSource = null;
+
+/* Lets one text area stop the other's wheel glide when the user switches screens. */
+const smoothScrollCancellers = new Map();
 
 /* Maximum number of history tabs allowed. */
 const MAX_HISTORY_ENTRIES = 5;
@@ -162,7 +162,7 @@ function restoreMarkdownContent(text, protectedParts) {
   return restoredText;
 }
 
-/* Runs only the cleanup rules currently enabled in the Controls panel. */
+/* Runs only the cleanup rules currently enabled in the controls rail. */
 function cleanText(text) {
   const protectedContent = protectMarkdownContent(text);
   let cleanedText = protectedContent.text;
@@ -377,6 +377,7 @@ function displayText(text) {
 function setCombinedView(active) {
   combinedViewActive = active;
   inputText.readOnly = active;
+  clearButton.disabled = active;
 
   originalPanel.classList.toggle(
     "combined-preview",
@@ -393,7 +394,21 @@ function updateDownloadButton() {
 /* Gives mouse-wheel scrolling a smooth gliding effect. */
 function enableSmoothWheelScroll(element) {
   let targetScrollTop = element.scrollTop;
+  let currentScrollTop = element.scrollTop;
   let animationFrame = null;
+
+  /* Stops a glide when anything other than the wheel takes over scrolling. */
+  function cancelGlide() {
+    if (animationFrame !== null) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+  }
+
+  element.addEventListener("pointerdown", cancelGlide);
+  element.addEventListener("touchstart", cancelGlide, { passive: true });
+  element.addEventListener("keydown", cancelGlide);
+  smoothScrollCancellers.set(element, cancelGlide);
 
   element.addEventListener(
     "wheel",
@@ -404,6 +419,21 @@ function enableSmoothWheelScroll(element) {
       }
 
       event.preventDefault();
+
+      /* This screen is now the one being scrolled, so stop the other screen's glide. */
+      activeScrollSource = element;
+
+      smoothScrollCancellers.forEach((cancel, other) => {
+        if (other !== element) {
+          cancel();
+        }
+      });
+
+      /* Start from where the text really is unless a glide is already running. */
+      if (animationFrame === null) {
+        targetScrollTop = element.scrollTop;
+        currentScrollTop = element.scrollTop;
+      }
 
       targetScrollTop += event.deltaY * 0.7; /* Controls how far each wheel movement travels. */
 
@@ -416,23 +446,26 @@ function enableSmoothWheelScroll(element) {
       );
 
       if (animationFrame === null) {
-        animateScroll();
+        animationFrame =
+          requestAnimationFrame(animateScroll);
       }
     },
     { passive: false }
   );
 
+  /* Tracks the position here because browsers round scrollTop, which could stop the glide finishing. */
   function animateScroll() {
     const distance =
-      targetScrollTop - element.scrollTop;
-
-    element.scrollTop += distance * 0.10; /* Controls how quickly it catches up. Higher = faster. */
+      targetScrollTop - currentScrollTop;
 
     if (Math.abs(distance) < 0.5) {
       element.scrollTop = targetScrollTop;
       animationFrame = null;
       return;
     }
+
+    currentScrollTop += distance * 0.10; /* Controls how quickly it catches up. Higher = faster. */
+    element.scrollTop = currentScrollTop;
 
     animationFrame =
       requestAnimationFrame(animateScroll);
@@ -458,15 +491,13 @@ function syncTextScroll(source, target) {
   const targetMaxScroll =
     target.scrollHeight - target.clientHeight;
 
-  synchronisedScrollTargets.add(target);
-
   target.scrollTop =
     ratio * targetMaxScroll;
 }
 
 
 /* =========================
-   Controls Panel
+   Controls Rail
    ========================= */
 
 const cleanupControls = [
@@ -484,7 +515,7 @@ const cleanupControls = [
 /* Keeps the visual toggle and accessibility state in sync. */
 function updateCleanupControl(element, enabled) {
   element.classList.toggle("active", enabled);
-  element.setAttribute("aria-checked", enabled);
+  element.setAttribute("aria-pressed", enabled);
 }
 
 /* Changes one cleanup rule and immediately refreshes the Pretty output. */
@@ -501,27 +532,15 @@ function toggleCleanupOption(option, element) {
   saveWorkspace();
 }
 
-/* Makes the existing checkbox-style controls clickable and keyboard accessible. */
+/* Connects each toggle button in the controls rail to its cleanup rule. */
 function setupCleanupControls() {
   cleanupControls.forEach(({ element, option }) => {
-    element.setAttribute("role", "checkbox");
-    element.setAttribute("tabindex", "0");
-
     updateCleanupControl(
       element,
       cleanupOptions[option]
     );
 
     element.addEventListener("click", () => {
-      toggleCleanupOption(option, element);
-    });
-
-    element.addEventListener("keydown", event => {
-      if (event.key !== "Enter" && event.key !== " ") {
-        return;
-      }
-
-      event.preventDefault();
       toggleCleanupOption(option, element);
     });
   });
@@ -960,7 +979,7 @@ function resetWorkspace() {
     DEFAULT_CLEANUP_OPTIONS
   );
 
-  /* Update the visible Controls to match the defaults. */
+  /* Update the controls rail to match the defaults. */
   cleanupControls.forEach(({ element, option }) => {
     updateCleanupControl(
       element,
@@ -970,6 +989,7 @@ function resetWorkspace() {
 
   /* Return History Mode to its default state. */
   inputText.readOnly = false;
+  clearButton.disabled = false;
 
   originalPanel.classList.remove(
     "combined-preview"
@@ -1046,26 +1066,22 @@ inputText.addEventListener("input", () => {
   saveWorkspace();
 });
 
-/* Opens the Controls panel without changing the current text. */
-controlsButton.addEventListener("click", () => {
-  editorView.classList.add("hidden");
-  helpView.classList.add("hidden");
-  controlsView.classList.remove("hidden");
+/* Clears the editor text while leaving history entries and cleanup rules alone. */
+clearButton.addEventListener("click", () => {
+  if (combinedViewActive || inputText.value === "") {
+    return;
+  }
 
-  controlsButton.classList.add("active");
-  helpButton.classList.remove("active");
+  /* Deleting through the browser keeps the clear undoable with Ctrl+Z. */
+  inputText.focus();
+  inputText.select();
+  document.execCommand("delete");
 
-  originalPanelTitle.textContent = "Controls";
-});
-
-/* Closes the Controls panel and returns to the editor. */
-controlsCloseButton.addEventListener("click", () => {
-  controlsView.classList.add("hidden");
-  editorView.classList.remove("hidden");
-
-  controlsButton.classList.remove("active");
-
-  originalPanelTitle.textContent = "Original";
+  /* Fallback for when the editor is hidden or the command is unsupported. */
+  if (inputText.value !== "") {
+    inputText.value = "";
+    inputText.dispatchEvent(new Event("input"));
+  }
 });
 
 /* Opens and closes the Help view. */
@@ -1086,32 +1102,16 @@ helpButton.addEventListener("click", () => {
 
   /* Hide the other views before opening Help. */
   editorView.classList.add("hidden");
-  controlsView.classList.add("hidden");
   helpView.classList.remove("hidden");
 
-  controlsButton.classList.remove("active");
   helpButton.classList.add("active");
 
   originalPanelTitle.textContent = "Help";
 });
 
-/* Opens Controls directly from the Help description. */
-helpControlsLink.addEventListener("click", () => {
-  helpView.classList.add("hidden");
-  editorView.classList.add("hidden");
-  controlsView.classList.remove("hidden");
-
-  helpButton.classList.remove("active");
-  controlsButton.classList.add("active");
-
-  originalPanelTitle.textContent = "Controls";
-});
-
 /* Keeps the processed text aligned while the original text scrolls. */
 inputText.addEventListener("scroll", () => {
-
-  if (synchronisedScrollTargets.has(inputText)) {
-    synchronisedScrollTargets.delete(inputText);
+  if (activeScrollSource !== inputText) {
     return;
   }
 
@@ -1120,12 +1120,24 @@ inputText.addEventListener("scroll", () => {
 
 /* Keeps the original text aligned while the processed text scrolls. */
 outputText.addEventListener("scroll", () => {
-  if (synchronisedScrollTargets.has(outputText)) {
-    synchronisedScrollTargets.delete(outputText);
+  if (activeScrollSource !== outputText) {
     return;
   }
 
   syncTextScroll(outputText, inputText);
+});
+
+/* Marks a text area as the one being scrolled whenever the user interacts with it. */
+[inputText, outputText].forEach(element => {
+  ["pointerdown", "touchstart", "keydown", "focus"].forEach(type => {
+    element.addEventListener(
+      type,
+      () => {
+        activeScrollSource = element;
+      },
+      { passive: true }
+    );
+  });
 });
 
 /* Downloads the processed text as a plain text file. */
@@ -1203,6 +1215,7 @@ historyToggleButton.addEventListener("click", () => {
   if (combinedViewActive) {
     combinedViewActive = false;
     inputText.readOnly = false;
+    clearButton.disabled = false;
 
     const activeEntry = getActiveHistoryEntry();
 

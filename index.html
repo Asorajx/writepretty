@@ -63,11 +63,11 @@
             </button>
 
             <button
-              id="controlsButton"
+              id="clearButton"
               type="button"
-              data-tooltip="Choose which cleanup rules WritePretty applies"
+              data-tooltip="Clear the text in the editor"
             >
-              Controls
+              Clear
             </button>
 
             <button
@@ -96,120 +96,14 @@
               </div>
             </div>
 
-            <div id="controlsView" class="hidden">
-
-              <div class="controls-group">
-                <h4>Cleanup</h4>
-                <label
-                  id="extraSpacesControl"
-                  class="control-option active"
-                  data-tooltip="Remove repeated spaces inside lines"
-                >
-                  <span class="control-box"></span>
-                  <span>Spaces</span>
-                </label>
-
-                <label
-                  id="punctuationControl"
-                  class="control-option active"
-                  data-tooltip="Fix clear spacing around punctuation"
-                >
-                  <span class="control-box"></span>
-                  <span>Punctuation</span>
-                </label>
-
-                <label
-                  id="capitalisationControl"
-                  class="control-option active"
-                  data-tooltip="Correct clear capitalisation issues"
-                >
-                  <span class="control-box"></span>
-                  <span>Capitalisation</span>
-                </label>
-
-                <label
-                  id="extraLineBreaksControl"
-                  class="control-option"
-                  data-tooltip="Remove empty lines while keeping normal line breaks"
-                >
-                  <span class="control-box"></span>
-                  <span>Extra line breaks</span>
-                </label>
-              </div>
-
-              <div class="controls-group">
-                <h4>Markdown</h4>
-                <label
-                  id="headingControl"
-                  class="control-option"
-                  data-tooltip="Remove Markdown heading markers such as # and ##"
-                >
-                  <span class="control-box"></span>
-                  <span>Headings (#)</span>
-                </label>
-
-                <label
-                  id="bulletControl"
-                  class="control-option"
-                  data-tooltip="Remove Markdown bullet markers while keeping the item text"
-                >
-                  <span class="control-box"></span>
-                  <span>Bullets (-)</span>
-                </label>
-
-                <label
-                  id="numberedListControl"
-                  class="control-option"
-                  data-tooltip="Remove numbered-list markers such as 1. and 2."
-                >
-                  <span class="control-box"></span>
-                  <span>Numbered lists (1.)</span>
-                </label>
-
-                <label
-                  id="quoteControl"
-                  class="control-option"
-                  data-tooltip="Remove Markdown quote markers such as > and >>"
-                >
-                  <span class="control-box"></span>
-                  <span>Quotes (&gt;)</span>
-                </label>
-
-                <label
-                  id="emphasisControl"
-                  class="control-option"
-                  data-tooltip="Remove Markdown emphasis markers such as * and **"
-                >
-                  <span class="control-box"></span>
-                  <span>Emphasis (*)</span>
-                </label>
-              </div>
-
-              <button
-                id="controlsCloseButton"
-                type="button"
-                data-tooltip="Return to the Original editor"
-              >
-                Close
-              </button>
-
-            </div>
-
             <div id="helpView" class="hidden">
 
               <div class="help-section">
                 <h4>Automatic cleanup</h4>
                   <p>
                     WritePretty uses simple rules to clean spacing, punctuation,
-                    and capitalisation. Individual cleanup rules can be changed
-                    using
-                    <button
-                      id="helpControlsLink"
-                      class="help-inline-button"
-                      type="button"
-                    >
-                      Controls
-                    </button>.
+                    and capitalisation. Individual cleanup rules can be switched
+                    on or off using the icon rail beside the Original screen.
                   </p>
               </div>
 
@@ -226,7 +120,7 @@
               <div class="help-section">
                 <h4>Markdown</h4>
                 <p>
-                  Markdown formatting can be preserved or removed using Controls,
+                  Markdown formatting can be preserved or removed using the icon rail,
                   including headings, bullets, numbered lists, quotes, and emphasis.
                 </p>
               </div>
@@ -255,6 +149,121 @@
 
           </div>
         </div>
+
+        <!-- Vertical rail of cleanup rule toggles, mirroring the History rail -->
+        <aside class="controls-rail" aria-label="Cleanup rules">
+
+          <button
+            id="extraSpacesControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Spaces"
+            data-tooltip="Remove extra spaces"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 10v4h14v-4"/>
+            </svg>
+          </button>
+
+          <button
+            id="punctuationControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Punctuation"
+            data-tooltip="Fix spacing around punctuation"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle class="solid" cx="7" cy="16" r="1.8"/>
+              <circle class="solid" cx="15.5" cy="14" r="1.8"/>
+              <path d="M17.3 14c0 3-1.3 4.6-3.3 5.5"/>
+            </svg>
+          </button>
+
+          <button
+            id="capitalisationControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Capitalisation"
+            data-tooltip="Fix capital letters"
+          >
+            Aa
+          </button>
+
+          <button
+            id="extraLineBreaksControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Extra line breaks"
+            data-tooltip="Remove blank lines"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 6v6a3 3 0 0 1-3 3H6"/>
+              <path d="m10 11-4 4 4 4"/>
+            </svg>
+          </button>
+
+          <span class="controls-rail-divider" aria-hidden="true"></span>
+
+          <button
+            id="headingControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Markdown headings"
+            data-tooltip="Remove # from headings"
+          >
+            #
+          </button>
+
+          <button
+            id="bulletControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Markdown bullets"
+            data-tooltip="Remove - from bullet points"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle class="solid" cx="5" cy="7" r="1.3"/>
+              <circle class="solid" cx="5" cy="12" r="1.3"/>
+              <circle class="solid" cx="5" cy="17" r="1.3"/>
+              <path d="M10 7h9M10 12h9M10 17h9"/>
+            </svg>
+          </button>
+
+          <button
+            id="numberedListControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Markdown numbered lists"
+            data-tooltip="Remove 1. 2. from numbered lists"
+          >
+            1.
+          </button>
+
+          <button
+            id="quoteControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Markdown quotes"
+            data-tooltip="Remove > from quotes"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 5v14M10 8h9M10 12h9M10 16h6"/>
+            </svg>
+          </button>
+
+          <button
+            id="emphasisControl"
+            class="control-toggle"
+            type="button"
+            aria-label="Markdown emphasis"
+            data-tooltip="Remove * from bold and italic text"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5.9 8.5l12.2 7M18.1 8.5l-12.2 7"/>
+            </svg>
+          </button>
+
+        </aside>
 
       </div>
 

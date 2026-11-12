@@ -683,9 +683,9 @@ textarea {
 #helpView {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 
-  padding: 20px;
+  padding: 10px 16px;
 }
 
 .help-section h4 {

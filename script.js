@@ -14,6 +14,9 @@ const resetConfirmButton = document.getElementById("resetConfirmButton");
 
 const clearButton = document.getElementById("clearButton");
 
+const openButton = document.getElementById("openButton");
+const fileInput = document.getElementById("fileInput");
+
 const helpButton = document.getElementById("helpButton");
 const helpView = document.getElementById("helpView");
 
@@ -86,6 +89,9 @@ const smoothScrollCancellers = new Map();
 
 /* Maximum number of history tabs allowed. */
 const MAX_HISTORY_ENTRIES = 5;
+
+/* Largest file the Open button accepts, in bytes (1 MB). */
+const MAX_FILE_SIZE = 1024 * 1024;
 
 /* Key used to save the current workspace in the browser. */
 const AUTOSAVE_KEY = "writepretty-autosave";
@@ -385,6 +391,7 @@ function setCombinedView(active) {
   combinedViewActive = active;
   inputText.readOnly = active;
   clearButton.disabled = active;
+  openButton.disabled = active;
 
   originalPanel.classList.toggle(
     "combined-preview",
@@ -399,6 +406,63 @@ function updateDownloadButton() {
 
   downloadButton.disabled = outputIsEmpty;
   copyButton.disabled = outputIsEmpty;
+}
+
+/* Briefly shows a message on the Open button when a file cannot be loaded. */
+function showOpenMessage(message) {
+  openButton.textContent = message;
+
+  setTimeout(() => {
+    openButton.textContent = "Open";
+  }, 1500);
+}
+
+/* Loads a .txt or .md file into the editor without sending it anywhere. */
+async function openTextFile(file) {
+  if (!file || combinedViewActive) {
+    return;
+  }
+
+  const isTextFile =
+    /\.(txt|md|markdown)$/i.test(file.name) ||
+    file.type.startsWith("text/");
+
+  if (!isTextFile) {
+    showOpenMessage("Text only");
+    return;
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    showOpenMessage("Too large");
+    return;
+  }
+
+  let text;
+
+  try {
+    text = await file.text();
+  } catch (error) {
+    showOpenMessage("Failed");
+    return;
+  }
+
+  /* Keep the existing text as a history entry instead of overwriting it. */
+  if (
+    historyModeEnabled &&
+    inputText.value !== "" &&
+    historyEntries.length < MAX_HISTORY_ENTRIES
+  ) {
+    createHistoryEntry(text);
+    return;
+  }
+
+  displayText(text);
+
+  if (historyModeEnabled) {
+    saveActiveHistoryEntry();
+  }
+
+  saveWorkspace();
 }
 
 /* Gives mouse-wheel scrolling a smooth gliding effect. */
@@ -1007,6 +1071,7 @@ function resetWorkspace() {
   /* Return History Mode to its default state. */
   inputText.readOnly = false;
   clearButton.disabled = false;
+  openButton.disabled = false;
 
   originalPanel.classList.remove(
     "combined-preview"
@@ -1102,6 +1167,45 @@ inputText.addEventListener("input", () => {
   }
 
   saveWorkspace();
+});
+
+/* Opens the file picker. */
+openButton.addEventListener("click", () => {
+  fileInput.click();
+});
+
+/* Loads the chosen file, then clears the picker so the same file can be chosen again. */
+fileInput.addEventListener("change", () => {
+  openTextFile(fileInput.files[0]);
+  fileInput.value = "";
+});
+
+/* Highlights the Original screen while a file is dragged over it. */
+originalPanel.addEventListener("dragover", event => {
+  if (!event.dataTransfer.types.includes("Files")) {
+    return;
+  }
+
+  event.preventDefault();
+  originalPanel.classList.add("drag-over");
+});
+
+originalPanel.addEventListener("dragleave", event => {
+  if (!originalPanel.contains(event.relatedTarget)) {
+    originalPanel.classList.remove("drag-over");
+  }
+});
+
+/* Loads a file dropped onto the Original screen. */
+originalPanel.addEventListener("drop", event => {
+  if (!event.dataTransfer.types.includes("Files")) {
+    return;
+  }
+
+  event.preventDefault();
+  originalPanel.classList.remove("drag-over");
+
+  openTextFile(event.dataTransfer.files[0]);
 });
 
 /* Clears the editor text while leaving history entries and cleanup rules alone. */
@@ -1261,6 +1365,7 @@ historyToggleButton.addEventListener("click", () => {
     combinedViewActive = false;
     inputText.readOnly = false;
     clearButton.disabled = false;
+    openButton.disabled = false;
 
     const activeEntry = getActiveHistoryEntry();
 

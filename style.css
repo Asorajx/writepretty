@@ -554,6 +554,12 @@ body {
   width: 100%;
 }
 
+/* Outlines the Original screen while a file is dragged over it. */
+.original-panel.drag-over .monitor-screen {
+  outline: 2px dashed rgba(125, 211, 252, 0.6);
+  outline-offset: -8px;
+}
+
 /* Dims the original editor while combined history is shown as a read-only preview. */
 .original-panel.combined-preview {
   opacity: 0.55;
@@ -793,6 +799,11 @@ textarea {
   color: var(--accent);
 
   border-color: rgba(125, 211, 252, 0.45);
+}
+
+/* Keeps Copy the same width when its label changes to "Copied!". */
+#copyButton {
+  min-width: 74px;
 }
 
 #copyButton:not(:disabled):hover {

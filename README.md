@@ -1,5 +1,7 @@
 # WritePretty
 
+**Live site:** [asorajx.github.io/writepretty](https://asorajx.github.io/writepretty/)
+
 A lightweight browser-based text cleanup tool that improves consistency and readability using simple, rule-based processing.
 
 WritePretty makes small, predictable corrections while preserving the user's original wording. It does not use AI to rewrite text, and all processing is performed locally in the browser.

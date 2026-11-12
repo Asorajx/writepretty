@@ -85,6 +85,22 @@
             </button>
 
             <button
+              id="openButton"
+              type="button"
+              data-tooltip="Open a .txt or .md file, or drop one onto the screen"
+            >
+              Open
+            </button>
+
+            <!-- Hidden file picker used by the Open button -->
+            <input
+              id="fileInput"
+              class="hidden"
+              type="file"
+              accept=".txt,.md,.markdown,text/plain,text/markdown"
+            >
+
+            <button
               id="helpButton"
               type="button"
               data-tooltip="Learn how WritePretty's features work"

@@ -2,7 +2,9 @@
 
 Personal Project 02
 
-30th September 2026
+Completed: 30 September 2026
+
+Last updated: 12 November 2026
 
 ## 1. Overview
 

@@ -50,4 +50,5 @@ Users can control which cleanup rules are applied, compare the original and proc
 
 ## Documentation
 
-Full project report: [P02-writepretty.pdf](P02-writepretty.pdf)
+Full project report: [P02-writepretty.md](docs/P02-writepretty.md)<br>
+Test results: [P02-test-results.pdf](docs/P02-test-results.pdf)
